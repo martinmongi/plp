@@ -7,6 +7,7 @@ data Arbol23 a b = Hoja a | Dos b (Arbol23 a b) (Arbol23 a b) | Tres b b (Arbol2
 instance (Show a, Show b) => Show (Arbol23 a b) where
     show = ("\n" ++) . (padTree 0 0 False)
 
+padlength::Int
 padlength = 5    
     
 padTree:: (Show a, Show b) => Int -> Int -> Bool -> (Arbol23 a b)-> String
@@ -35,28 +36,58 @@ pad i = replicate i ' '
 
 {- Funciones pedidas. -}
 
---foldA23::
-foldA23 = undefined
+foldA23::(dato->res) -> (clave->res->res->res) -> (clave->clave->res->res->res->res) -> Arbol23 dato clave -> res
+foldA23 f1 f2 f3 (Hoja x) = f1 x
+foldA23 f1 f2 f3 (Dos k r1 r2) = f2 k (foldA23 f1 f2 f3 r1) (foldA23 f1 f2 f3 r2)
+foldA23 f1 f2 f3 (Tres k1 k2 r1 r2 r3) = f3 k1 k2 (foldA23 f1 f2 f3 r1) (foldA23 f1 f2 f3 r2) (foldA23 f1 f2 f3 r3)
 
 --Lista en preorden de los internos del árbol.
-internos::Arbol23 a b->[b]
-internos = undefined
+
+aux_internos_f1::dato->[clave]
+aux_internos_f1 _ = []
+
+aux_internos_f2::clave->[clave]->[clave]->[clave]
+aux_internos_f2 k x y = [k] ++ x ++ y
+
+aux_internos_f3::clave->clave->[clave]->[clave]->[clave]->[clave]
+aux_internos_f3 k1 k2 x y z = [k1,k2] ++ x ++ y ++ z
+
+internos::Arbol23 dato clave->[clave]
+internos x = foldA23 aux_internos_f1 aux_internos_f2 aux_internos_f3 x
 
 --Lista las hojas de izquierda a derecha.
-hojas::Arbol23 a b->[a]
-hojas = undefined
+aux_hojas_f1::dato->[dato]
+aux_hojas_f1 x = [x]
 
-esHoja::Arbol23 a b->Bool
-esHoja = undefined
+aux_hojas_f2::clave->[dato]->[dato]->[dato]
+aux_hojas_f2 _ x y = x ++ y
 
-mapA23::(a->c)->(b->d)->Arbol23 a b->Arbol23 c d
-mapA23 = undefined
+aux_hojas_f3::clave->clave->[dato]->[dato]->[dato]->[dato]
+aux_hojas_f3 _ _ x y z = x ++ y ++ z
+
+hojas::Arbol23 dato clave->[dato]
+hojas x = foldA23 aux_hojas_f1 aux_hojas_f2 aux_hojas_f3 x
+
+esHoja::Arbol23 dato clave->Bool
+esHoja (Hoja _) = True
+esHoja _ = False
+
+aux_mapA23_f1::(dato1->dato2)->dato1->Arbol23 dato2 clave2
+aux_mapA23_f1 f x = Hoja (f x)
+
+aux_mapA23_f2::(clave1->clave2)->clave1->Arbol23 dato2 clave2->Arbol23 dato2 clave2->Arbol23 dato2 clave2
+aux_mapA23_f2 f k r1 r2 = Dos (f k) r1 r2
+
+aux_mapA23_f3::(clave1->clave2)->clave1->clave1->Arbol23 dato2 clave2->Arbol23 dato2 clave2->Arbol23 dato2 clave2->Arbol23 dato2 clave2
+aux_mapA23_f3 f k1 k2 r1 r2 r3 = Tres (f k1) (f k2) r1 r2 r3
+
+mapA23::(dato1->dato2)->(clave1->clave2)->Arbol23 dato1 clave1->Arbol23 dato2 clave2
+mapA23 fdato fclave r = foldA23 (aux_mapA23_f1 fdato) (aux_mapA23_f2 fclave) (aux_mapA23_f3 fclave) r
 
 --Ejemplo de uso de mapA23.
 --Incrementa en 1 el valor de las hojas.
 incrementarHojas::Num a =>Arbol23 a b->Arbol23 a b
 incrementarHojas = mapA23 (+1) id
-
 
 --Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
