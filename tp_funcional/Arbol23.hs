@@ -8,23 +8,23 @@ instance (Show a, Show b) => Show (Arbol23 a b) where
     show = ("\n" ++) . (padTree 0 0 False)
 
 padlength::Int
-padlength = 5    
-    
+padlength = 5
+
 padTree:: (Show a, Show b) => Int -> Int -> Bool -> (Arbol23 a b)-> String
-padTree nivel acum doPad t = case t of 
+padTree nivel acum doPad t = case t of
 				  (Hoja x) -> initialPad ++ stuff x
-                                  (Dos x i d) -> initialPad ++ stuff x ++ 
+                                  (Dos x i d) -> initialPad ++ stuff x ++
                                                  pad padlength ++ rec x False i ++ "\n" ++
                                                  rec x True d ++ "\n"
                                   (Tres x y i m d) -> initialPad ++ stuff x ++ --(' ':tail (stuff y)) ++
                                                       pad padlength ++ rec x False i ++ "\n" ++
                                                       pad levelPad ++ stuff y ++ pad padlength ++ rec x False m ++ "\n" ++
-                                                      rec x True d ++ "\n" 
+                                                      rec x True d ++ "\n"
   where l = length . stuff
 	levelPad = (padlength*nivel + acum)
 	initialPad = (if doPad then pad levelPad else "")
 	rec x = padTree (nivel+1) (acum+l x)
-            
+
 stuff:: Show a => a -> String
 stuff x = if n > l then pad (n-l) ++ s else s
   where s = show x
@@ -116,6 +116,5 @@ arbolito3::Arbol23 Int (Int->Int->Int)
 arbolito3 = Dos (+) (Tres (*) (-) (Hoja 1) (Hoja 2) (Hoja 3)) (incrementarHojas arbolito3)
 
 arbolito4::Arbol23 Int Char
-arbolito4 = Dos 'p' (Dos 'l' (Dos 'g' (Hoja 5) (Hoja 2)) (Tres 'r' 'a' (Hoja 0)(Hoja 1)(Hoja 12))) 
+arbolito4 = Dos 'p' (Dos 'l' (Dos 'g' (Hoja 5) (Hoja 2)) (Tres 'r' 'a' (Hoja 0)(Hoja 1)(Hoja 12)))
                     (Dos 'p' (Tres 'n' 'd' (Hoja (-3))(Hoja 4)(Hoja 9)) (Dos 'e' (Hoja 20)(Hoja 7)))
-
