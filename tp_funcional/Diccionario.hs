@@ -30,39 +30,39 @@ interceptar (x,y) f1 f2 = case y of
 insertarYPropagar::clave->valor->Comp clave->Estr clave valor-> (Estr clave valor, Maybe (clave, Estr clave valor))
 insertarYPropagar c v comp a23 = let rec = insertarYPropagar c v comp in case a23 of
     --Si es hoja, elegimos la máxima de las claves y propagamos el balanceo hacia arriba.
-    Hoja (ch,vh) -> if comp c ch 
+    Hoja (ch,vh) -> if comp c ch
                 then (Hoja (c,v), Just (ch, Hoja (ch,vh)))
                 else (Hoja (ch, vh), Just (c, Hoja (c,v)))
-    {- Si el actual es Nodo-Dos, o se queda en forma Nodo-Dos o se transforma en 
+    {- Si el actual es Nodo-Dos, o se queda en forma Nodo-Dos o se transforma en
        Nodo-Tres; no puede ocurrir que haya propagación hacia arriba (retornamos Nothing). -}
     Dos c1 a1 a2 -> (if comp c c1
-                then 
+                then
                 -- La clave c va del lado izquierdo.
-                    interceptar (rec a1) 
+                    interceptar (rec a1)
                         (\s1 -> Dos c1 s1 a2)
                         (\s1 (c3, s2) -> Tres c3 c1 s1 s2 a2)
-                else 
+                else
                 -- La clave c va del lado derecho.
-                    interceptar (rec a2) 
+                    interceptar (rec a2)
                         (\s1 -> Dos c1 a1 s1)
                         (\s1 (c3, s2) -> Tres c1 c3 a1 s1 s2), Nothing)
     {- Nodo-tres sólo propaga si de abajo propagan, los tres casos son muy similares
        Sólo cambia en que árbol se inserta. -}
     Tres c1 c2 a1 a2 a3 -> if comp c c1
-                then 
+                then
                     -- La clave debe ir en el primer árbol.
-                    interceptar (rec a1) 
+                    interceptar (rec a1)
                         (\s1 -> (Tres c1 c2 s1 a2 a3, Nothing))
                         (\s1 (c3, s2) -> (Dos c3 s1 s2, Just(c1, Dos c2 a2 a3)))
                 else if comp c c2
-                then 
+                then
                     -- La clave debe ir en el árbol del medio.
-                    interceptar (rec a2) 
+                    interceptar (rec a2)
                         (\s1 -> (Tres c1 c2 a1 s1 a3, Nothing))
                         (\s1 (c3, s2) -> (Dos c1 a1 s1, Just(c3, Dos c2 s2 a3)))
-                else 
+                else
                     --La clave debe ir en el último árbol.
-                    interceptar (rec a3) 
+                    interceptar (rec a3)
                         (\s1 -> (Tres c1 c2 a1 a2 s1, Nothing))
                         (\s1 (c3, s2) -> (Dos c1 a1 a2, Just(c2, Dos c3 s1 s2)))
 
@@ -94,4 +94,3 @@ dicc2 = definirVarias [("inicio","casa"),("auto","flores"),("calle","auto"),("ca
 
 dicc3::Diccionario Int String
 dicc3 = definirVarias [(0,"Hola"),(-10,"Chau"),(15,"Felicidades"),(2,"etc."),(9,"a")] (vacio (\x y->x `mod` 5 < y `mod` 5))
-

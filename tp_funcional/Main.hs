@@ -7,7 +7,7 @@ import Test.HUnit
 
 {- Función a implementar. -}
 
-búsquedaDelTesoro::Eq a=>a->(a->Bool)->Diccionario a a->Maybe a 
+búsquedaDelTesoro::Eq a=>a->(a->Bool)->Diccionario a a->Maybe a
 búsquedaDelTesoro = undefined
 
 {- Diccionarios de prueba: -}
@@ -67,11 +67,11 @@ testsEj7 = test [
 testsEj8 = test [
   0 ~=? 0 --Cambiar esto por tests verdaderos.
   ]
-  
+
 testsEj9 = test [
   0 ~=? 0 --Cambiar esto por tests verdaderos.
   ]
-  
+
 testsEj10 = test [
   Just "alfajor" ~=? búsquedaDelTesoro "inicio" ((=='a').head) dicc2
   ]
