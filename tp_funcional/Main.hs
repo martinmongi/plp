@@ -57,7 +57,8 @@ testsEj5 = test [
   ]
 
 testsEj6 = test [
-  0 ~=? 0 --Cambiar esto por tests verdaderos.
+  isNothing (estructura (vacio (\x-> \y-> False))) ~=? True,
+  cmp (vacio (\x-> \y-> (x == 42 && y == 1337))) 42 1337 ~=? True
   ]
 
 testsEj7 = test [
