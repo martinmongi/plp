@@ -89,10 +89,91 @@ mapA23 fdato fclave r = foldA23 (aux_mapA23_f1 fdato) (aux_mapA23_f2 fclave) (au
 incrementarHojas::Num a =>Arbol23 a b->Arbol23 a b
 incrementarHojas = mapA23 (+1) id
 
+foldNat :: a -> (a -> a) -> Integer -> a
+foldNat z f n = case n of
+  0 -> z
+  otherwise -> f (foldNat z f (n-1))
+
+-- Direcciones para recorrer un Arbol23.
+data Dir23 = I | M | D deriving (Show)
+type Camino23 = [Dir23]
+
+data Crumb23 a b = DI b (Arbol23 a b)
+                 | DD b (Arbol23 a b)
+                 | TI b b (Arbol23 a b) (Arbol23 a b)
+                 | TM b b (Arbol23 a b) (Arbol23 a b)
+                 | TD b b (Arbol23 a b) (Arbol23 a b)
+                 deriving (Show)
+
+type Zipper23 a b = (Arbol23 a b, [Crumb23 a b])
+
+izq :: Zipper23 a b -> Maybe (Zipper23 a b)
+izq (Hoja a, _) = Nothing
+izq (Dos b r1 r2, bs) = Just (r1, DI b r2:bs)
+izq (Tres b1 b2 r1 r2 r3, bs) = Just (r1, TI b1 b2 r2 r3:bs)
+
+med :: Zipper23 a b -> Maybe (Zipper23 a b)
+med (Hoja a, _) = Nothing
+med (Dos b r1 r2, _) = Nothing
+med (Tres b1 b2 r1 r2 r3, bs) = Just (r2, TM b1 b2 r1 r3:bs)
+
+der :: Zipper23 a b -> Maybe (Zipper23 a b)
+der (Hoja a, _) = Nothing
+der (Dos b r1 r2, bs) = Just (r2, DD b r1:bs)
+der (Tres b1 b2 r1 r2 r3, bs) = Just (r3, TD b1 b2 r1 r2:bs)
+
+arriba :: Zipper23 a b -> Maybe (Zipper23 a b)
+arriba (a, DI b r:bs) = Just (Dos b a r, bs)
+arriba (a, DD b r:bs) = Just (Dos b r a, bs)
+arriba (a, TI b1 b2 rA rB:bs) = Just (Tres b1 b2 a rA rB, bs)
+arriba (a, TM b1 b2 rA rB:bs) = Just (Tres b1 b2 rA a rB, bs)
+arriba (a, TD b1 b2 rA rB:bs) = Just (Tres b1 b2 rA rB a, bs)
+arriba (_, []) = Nothing
+
+-- deshace todos los movimientos
+raiz :: Zipper23 a b -> Zipper23 a b
+raiz (a, []) = (a, [])
+raiz (a, bs) = case (arriba (a, bs)) of
+  Just (a', bs') -> raiz (a', bs')
+  Nothing -> (a, bs)
+
+paso :: Maybe (Zipper23 a b) -> Dir23 -> Maybe (Zipper23 a b)
+paso Nothing _ = Nothing
+paso (Just z) d = fun z
+  where
+    fun = case d of
+      I -> izq
+      M -> med
+      D -> der
+
+caminar :: Arbol23 a b -> Camino23 -> Maybe (Zipper23 a b)
+caminar a ds = foldl paso (Just (a, [])) ds
+
+-- reemplaza el arbol debajo del zipper por una hoja y reconstruye usando raiz
+truncar' :: a -> Maybe (Zipper23 a b) -> Maybe (Arbol23 a b)
+truncar' z m = case m of
+  Nothing -> Nothing
+  (Just (a, bs)) -> Just (fst (raiz (Hoja z, bs)))
+
+-- Trunca el árbol siguiendo un camino
+truncarDir :: a -> Camino23 -> Arbol23 a b -> Arbol23 a b
+truncarDir z ds a = case (truncar' z (caminar a ds)) of
+  Just t -> t   -- se truncó exitosamente, devuelve el truncado en el camino
+  Nothing -> a  -- truncar' dio Nothing, devuelve el árbol original
+
+-- Lista de caminos de una determinada longitud (no necesariamente son caminos válidos).
+caminos :: Integer -> [Camino23]
+caminos = foldNat [[]] (concatMap extender)
+  where extender ds = [I:ds, M:ds, D:ds]
+
+
 --Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
-truncar::a->Integer->Arbol23 a b->Arbol23 a b
-truncar = undefined
+truncar :: a -> Integer -> Arbol23 a b -> Arbol23 a b
+truncar z n a = foldr f a ds
+    where
+      f = truncarDir z
+      ds = caminos n
 
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
