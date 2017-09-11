@@ -64,6 +64,10 @@ testsEj6 = test [
 
 testsEj7 = test [
   0 ~=? 0 --Cambiar esto por tests verdaderos.
+  -- isNothing (estructura (vacio (\x-> \y-> False) )) ~=? True,
+  -- isNothing (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? False,
+  -- isJust (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? True,
+  -- fromJust (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? (Hoja (1,2))
   ]
 
 testsEj8 = test [

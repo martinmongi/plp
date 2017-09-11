@@ -77,8 +77,14 @@ definirVarias = (flip.foldr.uncurry) definir
 vacio::Comp clave->Diccionario clave valor
 vacio c = Dicc c Nothing
 
-definir::clave->valor->Diccionario clave valor->Diccionario clave valor
-definir = undefined
+definir :: clave -> valor -> Diccionario clave valor -> Diccionario clave valor
+definir k v d = if isNothing e
+  then Dicc c (Just (Hoja (k, v)))
+  else Dicc c (Just (insertar k v c (fromJust e)))
+    where
+      c = cmp d
+      e = estructura d
+
 
 obtener::Eq clave=>clave->Diccionario clave valor->Maybe valor
 obtener = undefined
