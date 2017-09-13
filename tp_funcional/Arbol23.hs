@@ -95,64 +95,51 @@ foldNat z f n = case n of
   _ -> f (foldNat z f (n-1))
 
 
---Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el resto del árbol por una hoja con el valor indicado.
+--Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el
+--resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
 truncar :: a -> Integer -> Arbol23 a b -> Arbol23 a b
-truncar h n a = (limpiarCamino h) $ foldNat z f n
+truncar reemplazo n arbol =
+    (truncarTruncable reemplazo) $ foldNat (truncable arbol) extender n
+
+{- Un "árbol truncable" es un Arbol23 que guarda un subárbol en cada nodo, y
+   puede truncarse o extenderse en las hojas de la frontera.
+   Además, para distinguir las hojas extensibles usa Maybe (Nothing indica que
+   la hoja se puede extender o truncar). -}
+type Arbol23Truncable a b = Arbol23 (Maybe a, Arbol23 a b) b
+
+
+{- Convierte un árbol en truncable. -}
+truncable :: Arbol23 a b -> Arbol23Truncable a b
+truncable (Hoja x) = Hoja (Just x, Hoja x) -- no se va a truncar
+truncable arbol    = Hoja (Nothing, arbol) -- truncable, puede extenderse
+
+
+{- Extiende un árbol truncable, reemplazando cada hoja por su siguienteNivel. -}
+extender :: Arbol23Truncable a b -> Arbol23Truncable a b
+extender = foldA23 fHoja Dos Tres where
+  fHoja (m, arbol) = siguienteNivel arbol
+
+
+{- Dado un árbol, devuelve su equivalente truncable por 1 nivel. -}
+siguienteNivel :: Arbol23 a b -> Arbol23Truncable a b
+siguienteNivel a = case a of
+    Hoja x -> t a
+    Dos x a1 a2 -> Dos x (t a1) (t a2)
+    Tres x y a1 a2 a3 -> Tres x y (t a1) (t a2) (t a3)
   where
-    z = (Hoja (Left []))
-    f = (crecer a) . agregarCamino
-
-agregarCamino :: Arbol23 (Either [Dir23] a) b -> Arbol23 (Either [Dir23] a) b
-agregarCamino = foldA23 fH fD fT where
-  fH x = case x of
-    (Left _) -> Hoja (Left [])
-    (Right r) -> Hoja (Right r)
-  fD x a1 a2 = Dos x (inc I a1) (inc D a2)
-  fT x y a1 a2 a3 = Tres x y (inc I a1) (inc M a2) (inc D a3)
-  inc d = mapA23 (applyLeft (d:)) id
-
-limpiarCamino :: a -> Arbol23 (Either [Dir23] a) b -> Arbol23 a b
-limpiarCamino h = mapA23 fH id
-  where
-    fH e = case e of
-      Right a -> a
-      Left _ -> h
-
-crecer :: Arbol23 a b -> Arbol23 (Either [Dir23] a) b -> Arbol23 (Either [Dir23] a) b
-crecer a = foldA23 fHoja Dos Tres where
-  fHoja ds = nodoTrunco a ds
+    t = truncable
 
 
-nodoTrunco :: Arbol23 a b -> (Either [Dir23] a) -> Arbol23 (Either [Dir23] a) b
-nodoTrunco _ (Right r) = Hoja (Right r)
-nodoTrunco a (Left ds) =
-  let
-    s = subArbol a ds
-    z = Hoja (Left [])
-  in case s of
-    Hoja x -> Hoja (Right x)
-    Dos x _ _ -> Dos x z z
-    Tres x y _ _ _ -> Tres x y z z z
+-- {- Transforma un árbol truncable en un árbol plano, reemplazando las hojas
+--    truncables por el valor indicado por el valor indicado. -}
+truncarTruncable :: a -> Arbol23Truncable a b -> Arbol23 a b
+truncarTruncable reemplazo = let
+  f (m, o) = case m of
+    Just a -> a
+    Nothing-> reemplazo -- truncado!
+  in mapA23 f id
 
-
-data Dir23 = I | M | D deriving Show
-
-subArbol :: Arbol23 a b -> [Dir23] -> Arbol23 a b
-subArbol a ds = foldl tomarDir a ds
-
-tomarDir :: Arbol23 a b -> Dir23 -> Arbol23 a b
-tomarDir (Dos _ i d) I = i
-tomarDir (Dos _ i d) D = d
-tomarDir (Tres _ _ i m d) I = i
-tomarDir (Tres _ _ i m d) M = m
-tomarDir (Tres _ _ i m d) D = d
-
-
-applyLeft :: (a -> c) -> Either a b -> Either c b
-applyLeft f h = case h of
-  Left n -> Left (f n)
-  Right x -> Right x
 
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
