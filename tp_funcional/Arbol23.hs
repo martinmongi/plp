@@ -92,88 +92,67 @@ incrementarHojas = mapA23 (+1) id
 foldNat :: a -> (a -> a) -> Integer -> a
 foldNat z f n = case n of
   0 -> z
-  otherwise -> f (foldNat z f (n-1))
-
--- Direcciones para recorrer un Arbol23.
-data Dir23 = I | M | D deriving (Show)
-type Camino23 = [Dir23]
-
-data Crumb23 a b = DI b (Arbol23 a b)
-                 | DD b (Arbol23 a b)
-                 | TI b b (Arbol23 a b) (Arbol23 a b)
-                 | TM b b (Arbol23 a b) (Arbol23 a b)
-                 | TD b b (Arbol23 a b) (Arbol23 a b)
-                 deriving (Show)
-
-type Zipper23 a b = (Arbol23 a b, [Crumb23 a b])
-
-izq :: Zipper23 a b -> Maybe (Zipper23 a b)
-izq (Hoja a, _) = Nothing
-izq (Dos b r1 r2, bs) = Just (r1, DI b r2:bs)
-izq (Tres b1 b2 r1 r2 r3, bs) = Just (r1, TI b1 b2 r2 r3:bs)
-
-med :: Zipper23 a b -> Maybe (Zipper23 a b)
-med (Hoja a, _) = Nothing
-med (Dos b r1 r2, _) = Nothing
-med (Tres b1 b2 r1 r2 r3, bs) = Just (r2, TM b1 b2 r1 r3:bs)
-
-der :: Zipper23 a b -> Maybe (Zipper23 a b)
-der (Hoja a, _) = Nothing
-der (Dos b r1 r2, bs) = Just (r2, DD b r1:bs)
-der (Tres b1 b2 r1 r2 r3, bs) = Just (r3, TD b1 b2 r1 r2:bs)
-
-arriba :: Zipper23 a b -> Maybe (Zipper23 a b)
-arriba (a, DI b r:bs) = Just (Dos b a r, bs)
-arriba (a, DD b r:bs) = Just (Dos b r a, bs)
-arriba (a, TI b1 b2 rA rB:bs) = Just (Tres b1 b2 a rA rB, bs)
-arriba (a, TM b1 b2 rA rB:bs) = Just (Tres b1 b2 rA a rB, bs)
-arriba (a, TD b1 b2 rA rB:bs) = Just (Tres b1 b2 rA rB a, bs)
-arriba (_, []) = Nothing
-
--- deshace todos los movimientos
-raiz :: Zipper23 a b -> Zipper23 a b
-raiz (a, []) = (a, [])
-raiz (a, bs) = case (arriba (a, bs)) of
-  Just (a', bs') -> raiz (a', bs')
-  Nothing -> (a, bs)
-
-paso :: Maybe (Zipper23 a b) -> Dir23 -> Maybe (Zipper23 a b)
-paso Nothing _ = Nothing
-paso (Just z) d = fun z
-  where
-    fun = case d of
-      I -> izq
-      M -> med
-      D -> der
-
-caminar :: Arbol23 a b -> Camino23 -> Maybe (Zipper23 a b)
-caminar a ds = foldl paso (Just (a, [])) ds
-
--- reemplaza el arbol debajo del zipper por una hoja y reconstruye usando raiz
-truncar' :: a -> Maybe (Zipper23 a b) -> Maybe (Arbol23 a b)
-truncar' z m = case m of
-  Nothing -> Nothing
-  (Just (a, bs)) -> Just (fst (raiz (Hoja z, bs)))
-
--- Trunca el árbol siguiendo un camino
-truncarDir :: a -> Camino23 -> Arbol23 a b -> Arbol23 a b
-truncarDir z ds a = case (truncar' z (caminar a ds)) of
-  Just t -> t   -- se truncó exitosamente, devuelve el truncado en el camino
-  Nothing -> a  -- truncar' dio Nothing, devuelve el árbol original
-
--- Lista de caminos de una determinada longitud (no necesariamente son caminos válidos).
-caminos :: Integer -> [Camino23]
-caminos = foldNat [[]] (concatMap extender)
-  where extender ds = [I:ds, M:ds, D:ds]
+  _ -> f (foldNat z f (n-1))
 
 
 --Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
 truncar :: a -> Integer -> Arbol23 a b -> Arbol23 a b
-truncar z n a = foldr f a ds
-    where
-      f = truncarDir z
-      ds = caminos n
+truncar h n a = (limpiarCamino h) $ foldNat z f n
+  where
+    z = (Hoja (Left []))
+    f = (crecer a) . agregarCamino
+
+agregarCamino :: Arbol23 (Either [Dir23] a) b -> Arbol23 (Either [Dir23] a) b
+agregarCamino = foldA23 fH fD fT where
+  fH x = case x of
+    (Left _) -> Hoja (Left [])
+    (Right r) -> Hoja (Right r)
+  fD x a1 a2 = Dos x (inc I a1) (inc D a2)
+  fT x y a1 a2 a3 = Tres x y (inc I a1) (inc M a2) (inc D a3)
+  inc d = mapA23 (applyLeft (d:)) id
+
+limpiarCamino :: a -> Arbol23 (Either [Dir23] a) b -> Arbol23 a b
+limpiarCamino h = mapA23 fH id
+  where
+    fH e = case e of
+      Right a -> a
+      Left _ -> h
+
+crecer :: Arbol23 a b -> Arbol23 (Either [Dir23] a) b -> Arbol23 (Either [Dir23] a) b
+crecer a = foldA23 fHoja Dos Tres where
+  fHoja ds = nodoTrunco a ds
+
+
+nodoTrunco :: Arbol23 a b -> (Either [Dir23] a) -> Arbol23 (Either [Dir23] a) b
+nodoTrunco _ (Right r) = Hoja (Right r)
+nodoTrunco a (Left ds) =
+  let
+    s = subArbol a ds
+    z = Hoja (Left [])
+  in case s of
+    Hoja x -> Hoja (Right x)
+    Dos x _ _ -> Dos x z z
+    Tres x y _ _ _ -> Tres x y z z z
+
+
+data Dir23 = I | M | D deriving Show
+
+subArbol :: Arbol23 a b -> [Dir23] -> Arbol23 a b
+subArbol a ds = foldl tomarDir a ds
+
+tomarDir :: Arbol23 a b -> Dir23 -> Arbol23 a b
+tomarDir (Dos _ i d) I = i
+tomarDir (Dos _ i d) D = d
+tomarDir (Tres _ _ i m d) I = i
+tomarDir (Tres _ _ i m d) M = m
+tomarDir (Tres _ _ i m d) D = d
+
+
+applyLeft :: (a -> c) -> Either a b -> Either c b
+applyLeft f h = case h of
+  Left n -> Left (f n)
+  Right x -> Right x
 
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
@@ -198,6 +177,9 @@ arbolito2 = Dos True (Hoja (-1)) (Tres False True (Hoja 0) (Hoja (-2)) (Hoja 4))
 
 arbolito3::Arbol23 Int (Int->Int->Int)
 arbolito3 = Dos (+) (Tres (*) (-) (Hoja 1) (Hoja 2) (Hoja 3)) (incrementarHojas arbolito3)
+
+
+arbolito3' = Dos "(+)" (Tres "(*)" "(-)" (Hoja 1) (Hoja 2) (Hoja 3)) (incrementarHojas arbolito3')
 
 arbolito4::Arbol23 Int Char
 arbolito4 = Dos 'p' (Dos 'l' (Dos 'g' (Hoja 5) (Hoja 2)) (Tres 'r' 'a' (Hoja 0)(Hoja 1)(Hoja 12)))
