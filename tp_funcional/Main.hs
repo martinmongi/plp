@@ -49,7 +49,8 @@ testsEj3 = test [
   ]
 
 testsEj4 = test [
-  [1,2,3,2,3,4,3,4,5,4,5,6,0,0,0,0,0] ~=? hojas (truncar 0 6 arbolito3)
+  [1,2,3,2,3,4,3,4,5,4,5,6,0,0,0,0,0] ~=? hojas (truncar 0 6 arbolito3),
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ~=? hojas (truncar 0 3 arbolito4)
   ]
 
 testsEj5 = test [
