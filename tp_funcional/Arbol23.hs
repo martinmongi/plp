@@ -108,7 +108,7 @@ type Arbol23Truncable a b = Arbol23 (HojaTruncable a b) b
 
 {- Convierte un árbol en truncable. -}
 truncable :: Arbol23 a b -> Arbol23Truncable a b
-truncable arbol    = Hoja (Frontera arbol) -- truncable, puede extenderse
+truncable arbol = Hoja (Frontera arbol) -- truncable, puede extenderse
 
 
 {- Extiende un árbol truncable, reemplazando cada hoja por su siguienteNivel. -}
