@@ -90,7 +90,10 @@ obtener::Eq clave=>clave->Diccionario clave valor->Maybe valor
 obtener = undefined
 
 claves::Diccionario clave valor->[clave]
-claves = undefined
+claves d = claves_estr (estructura d)
+  where
+    claves_estr (Nothing) = []
+    claves_estr (Just a) =  map (\(k,v) -> k) $ hojas a
 
 {- Diccionarios de prueba: -}
 
