@@ -36,64 +36,54 @@ pad i = replicate i ' '
 
 {- Funciones pedidas. -}
 
-foldA23::(dato->res) -> (clave->res->res->res) -> (clave->clave->res->res->res->res) -> Arbol23 dato clave -> res
-foldA23 f1 f2 f3 (Hoja x) = f1 x
-foldA23 f1 f2 f3 (Dos k r1 r2) = f2 k (foldA23 f1 f2 f3 r1) (foldA23 f1 f2 f3 r2)
-foldA23 f1 f2 f3 (Tres k1 k2 r1 r2 r3) = f3 k1 k2 (foldA23 f1 f2 f3 r1) (foldA23 f1 f2 f3 r2) (foldA23 f1 f2 f3 r3)
+foldA23 :: (a -> c) -> (b -> c -> c -> c) -> (b -> b -> c -> c -> c -> c) -> Arbol23 a b -> c
+foldA23 fHoja fDos fTres t = case t of
+    Hoja x -> fHoja x
+    Dos k r1 r2 -> fDos k (foldA23' r1) (foldA23' r2)
+    Tres k1 k2 r1 r2 r3 -> fTres k1 k2 (foldA23' r1) (foldA23' r2) (foldA23' r3)
+  where
+    foldA23' = foldA23 fHoja fDos fTres
+
 
 --Lista en preorden de los internos del árbol.
-
-aux_internos_f1::dato->[clave]
-aux_internos_f1 _ = []
-
-aux_internos_f2::clave->[clave]->[clave]->[clave]
-aux_internos_f2 k x y = [k] ++ x ++ y
-
-aux_internos_f3::clave->clave->[clave]->[clave]->[clave]->[clave]
-aux_internos_f3 k1 k2 x y z = [k1,k2] ++ x ++ y ++ z
-
-internos::Arbol23 dato clave->[clave]
-internos x = foldA23 aux_internos_f1 aux_internos_f2 aux_internos_f3 x
+internos :: Arbol23 a b -> [b]
+internos = foldA23 fHoja fDos fTres
+  where
+    fHoja _ = []
+    fDos k x y = [k] ++ x ++ y
+    fTres k1 k2 x y z = [k1, k2] ++ x ++ y ++ z
 
 --Lista las hojas de izquierda a derecha.
-aux_hojas_f1::dato->[dato]
-aux_hojas_f1 x = [x]
+hojas :: Arbol23 a b -> [a]
+hojas x = foldA23 fHoja fDos fTres x
+  where
+    fHoja x = [x]
+    fDos _ x y = x ++ y
+    fTres _ _ x y z = x ++ y ++ z
 
-aux_hojas_f2::clave->[dato]->[dato]->[dato]
-aux_hojas_f2 _ x y = x ++ y
+-- True si el arbol es hoja, falso si es Dos o Tres
+esHoja :: Arbol23 a b -> Bool
+esHoja a = case a of
+  Hoja _    -> True
+  otherwise -> False
 
-aux_hojas_f3::clave->clave->[dato]->[dato]->[dato]->[dato]
-aux_hojas_f3 _ _ x y z = x ++ y ++ z
-
-hojas::Arbol23 dato clave->[dato]
-hojas x = foldA23 aux_hojas_f1 aux_hojas_f2 aux_hojas_f3 x
-
-esHoja::Arbol23 dato clave->Bool
-esHoja (Hoja _) = True
-esHoja _ = False
-
-aux_mapA23_f1::(dato1->dato2)->dato1->Arbol23 dato2 clave2
-aux_mapA23_f1 f x = Hoja (f x)
-
-aux_mapA23_f2::(clave1->clave2)->clave1->Arbol23 dato2 clave2->Arbol23 dato2 clave2->Arbol23 dato2 clave2
-aux_mapA23_f2 f k r1 r2 = Dos (f k) r1 r2
-
-aux_mapA23_f3::(clave1->clave2)->clave1->clave1->Arbol23 dato2 clave2->Arbol23 dato2 clave2->Arbol23 dato2 clave2->Arbol23 dato2 clave2
-aux_mapA23_f3 f k1 k2 r1 r2 r3 = Tres (f k1) (f k2) r1 r2 r3
-
-mapA23::(dato1->dato2)->(clave1->clave2)->Arbol23 dato1 clave1->Arbol23 dato2 clave2
-mapA23 fdato fclave r = foldA23 (aux_mapA23_f1 fdato) (aux_mapA23_f2 fclave) (aux_mapA23_f3 fclave) r
+-- Map de un Arbol23 a otro
+mapA23 :: (a -> c) -> (b -> d) -> Arbol23 a b -> Arbol23 c d
+mapA23 fH fI = foldA23 mHoja mDos mTres
+  where
+    mHoja x = Hoja (fH x)
+    mDos k r1 r2 = Dos (fI k) r1 r2
+    mTres k1 k2 r1 r2 r3 = Tres (fI k1) (fI k2) r1 r2 r3
 
 --Ejemplo de uso de mapA23.
 --Incrementa en 1 el valor de las hojas.
-incrementarHojas::Num a =>Arbol23 a b->Arbol23 a b
+incrementarHojas :: Num a => Arbol23 a b -> Arbol23 a b
 incrementarHojas = mapA23 (+1) id
 
 foldNat :: a -> (a -> a) -> Integer -> a
 foldNat z f n = case n of
   0 -> z
   _ -> f (foldNat z f (n-1))
-
 
 --Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el
 --resto del árbol por una hoja con el valor indicado.
@@ -143,10 +133,7 @@ truncarTruncable reemplazo = let
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
 evaluar :: Arbol23 a (a -> a -> a) -> a
-evaluar = foldA23 fH fD fT where
-  fH x              = x
-  fD f h1 h2        = f h1 h2
-  fT f1 f2 h1 h2 h3 = f2 (f1 h1 h2) h3
+evaluar = foldA23 id (\f -> \a -> \b -> f a b) (\f -> \g -> \a -> \b -> \c -> g (f a b) c)
 
 --Ejemplo:
 --evaluar (truncar 0 6 arbolito3) = 22 = (1*2-3)+(2*3-4)+(3*4-5)+(4*5-6)
