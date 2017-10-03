@@ -104,8 +104,13 @@ truncar reemplazo n arbol =
 
 {- Un "árbol truncable" es un Arbol23 que guarda un subárbol en cada nodo, y
    puede truncarse o extenderse en las hojas de la frontera.
-   Además, para distinguir las hojas extensibles usa Maybe (Nothing indica que
-   la hoja se puede extender o truncar). -}
+   Además, para distinguir las hojas que se reemplazan al truncar usa Maybe:
+   - Just x, _;
+        Al truncarse, resuelve a x.
+   - Nothing, arbol (con subarboles);
+        Al truncarse, resuelve al reemplazo.
+        Al extenderse, se propaga a los subárboles.
+-}
 type Arbol23Truncable a b = Arbol23 (Maybe a, Arbol23 a b) b
 
 
