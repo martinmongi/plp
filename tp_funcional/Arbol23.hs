@@ -111,7 +111,6 @@ type Arbol23Truncable a b = Arbol23 (Maybe a, Arbol23 a b) b
 
 {- Convierte un árbol en truncable. -}
 truncable :: Arbol23 a b -> Arbol23Truncable a b
-truncable (Hoja x) = Hoja (Just x, Hoja x) -- no se va a truncar
 truncable arbol    = Hoja (Nothing, arbol) -- truncable, puede extenderse
 
 
@@ -124,7 +123,7 @@ extender = foldA23 fHoja Dos Tres where
 {- Dado un árbol, devuelve su equivalente truncable por 1 nivel. -}
 siguienteNivel :: Arbol23 a b -> Arbol23Truncable a b
 siguienteNivel a = case a of
-    Hoja x -> t a
+    Hoja x -> Hoja (Just x, Hoja x)
     Dos x a1 a2 -> Dos x (t a1) (t a2)
     Tres x y a1 a2 a3 -> Tres x y (t a1) (t a2) (t a3)
   where

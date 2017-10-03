@@ -1,7 +1,9 @@
 TODO
 
+Escribir tests de lo que falta
+
 Arbol
-Ejercicio 4: truncar (Hay un bug: truncar 0 3 arbolito4 no cambia las hojas por 0)
+Ejercicio 4: truncar (no pasa los tests)
 
 Diccionario
 Ejercicio 8: obtener
