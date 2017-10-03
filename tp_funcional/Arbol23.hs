@@ -104,21 +104,21 @@ truncar reemplazo n arbol =
 
 {- Un "árbol truncable" es un Arbol23 que guarda un subárbol en cada nodo, y
    puede truncarse o extenderse en las hojas de la frontera.
-   Además, para distinguir las hojas que se reemplazan al truncar usa Either:
-   - Left x:
+   Además, para distinguir las hojas que se reemplazan al truncar usa los tipos:
+   - Fija x:
         Al truncarse, resuelve a x.
-   - Right arbol:
+   - Frontera arbol:
         Al truncarse, resuelve al reemplazo.
         Al extenderse, se propaga a los subárboles.
 -}
 
-type HojaTruncable a b = Either a (Arbol23 a b)
+data HojaTruncable a b = Fija a | Frontera (Arbol23 a b)
 type Arbol23Truncable a b = Arbol23 (HojaTruncable a b) b
 
 
 {- Convierte un árbol en truncable. -}
 truncable :: Arbol23 a b -> Arbol23Truncable a b
-truncable arbol    = Hoja (Right arbol) -- truncable, puede extenderse
+truncable arbol    = Hoja (Frontera arbol) -- truncable, puede extenderse
 
 
 {- Extiende un árbol truncable, reemplazando cada hoja por su siguienteNivel. -}
@@ -127,14 +127,14 @@ extender = foldA23 extenderHoja Dos Tres
 
 extenderHoja :: HojaTruncable a b -> Arbol23Truncable a b
 extenderHoja ht = case ht of
-    Left x -> Hoja (Left x)
-    Right arbol -> siguienteNivel arbol
+    Fija x -> Hoja (Fija x)
+    Frontera arbol -> siguienteNivel arbol
 
 
 {- Dado un árbol, devuelve su equivalente truncable por 1 nivel. -}
 siguienteNivel :: Arbol23 a b -> Arbol23Truncable a b
 siguienteNivel a = case a of
-    Hoja x -> Hoja (Left x)
+    Hoja x -> Hoja (Fija x)
     Dos x a1 a2 -> Dos x (t a1) (t a2)
     Tres x y a1 a2 a3 -> Tres x y (t a1) (t a2) (t a3)
   where
@@ -146,8 +146,8 @@ siguienteNivel a = case a of
 truncarTruncable :: a -> Arbol23Truncable a b -> Arbol23 a b
 truncarTruncable reemplazo = let
   f ht = case ht of
-    Left a -> a
-    Right _-> reemplazo -- truncado!
+    Fija a -> a
+    Frontera _-> reemplazo -- truncado!
   in mapA23 f id
 
 
