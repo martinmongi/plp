@@ -1,5 +1,6 @@
 import Diccionario
 import Data.Maybe
+import Data.List
 import Arbol23
 import Test.HUnit
 
@@ -64,25 +65,30 @@ diccVacio::Diccionario Int String
 diccVacio = vacio (<)
 
 testsEj6 = test [
-  [] ~=? claves diccVacio
+  True ~=? isNothing (estructura diccVacio),
+  [] ~=? claves diccVacio,
+  Nothing ~=? obtener 42 diccVacio
   ]
 
 testsEj7 = test [
-  0 ~=? 0 --Cambiar esto por tests verdaderos.
-  -- isNothing (estructura (vacio (\x-> \y-> False) )) ~=? True,
-  -- isNothing (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? False,
-  -- isJust (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? True,
-  -- fromJust (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? (Hoja (1,2))
+  isNothing (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? False,
+  isJust (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? True,
+  "perro" ~=? fromJust (obtener 1 (definir 1 "perro" diccVacio))
   ]
 
 testsEj8 = test [
-  0 ~=? 0 --Cambiar esto por tests verdaderos.
+  "Hola" ~=? fromJust (obtener 0 dicc1),
+  "Chau" ~=? fromJust (obtener (-10) dicc1),
+  "Felicidades" ~=? fromJust (obtener 15 dicc1),
+  True ~=? isNothing (obtener 27 dicc1)
   ]
 
 testsEj9 = test [
-  0 ~=? 0 --Cambiar esto por tests verdaderos.
+  [-10,0,2,9,15] ~=? sort(claves dicc1)
   ]
 
 testsEj10 = test [
-  Just "alfajor" ~=? búsquedaDelTesoro "inicio" ((=='a').head) dicc2
+  Just "alfajor" ~=? búsquedaDelTesoro "inicio" ((=='a').head) dicc2,
+  Nothing ~=? búsquedaDelTesoro "auto" (=="alfajor") dicc2,
+  Just "alfajor" ~=? búsquedaDelTesoro "ropero" ((=='a').head) dicc2
   ]

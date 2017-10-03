@@ -1,5 +1,4 @@
-module Diccionario (Diccionario, vacio, definir, definirVarias, obtener, claves
--- ,cmp, estructura
+module Diccionario (Diccionario, vacio, definir, definirVarias, obtener, claves, cmp, estructura
 ) where
 
 import Data.Maybe
