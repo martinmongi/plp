@@ -85,11 +85,10 @@ definir k v d = if isNothing e
       c = cmp d
       e = estructura d
 
-
--- obtener::Eq clave=>clave->Diccionario clave valor->Maybe valor
+obtener::Eq clave=>clave->Diccionario clave valor->Maybe valor
 obtener k d = obtener_estr (cmp d) k (estructura d)
   where
-    obtener_estr cmp k (Nothing) = undefined
+    obtener_estr cmp k (Nothing) = Nothing
     obtener_estr cmp k (Just a) = (\(Hoja (k',v))-> if k == k' then Just v else Nothing) $ head $ dropWhile (not.esHoja) $ iterate (bajar_nivel cmp k) a
 
 bajar_nivel::Eq clave=>(clave->clave->Bool)->clave->Arbol23 (clave, valor) clave->Arbol23 (clave, valor) clave
@@ -101,14 +100,13 @@ bajar_nivel cmp k (Tres k1 k2 a1 a2 a3)
     | cmp k k1 = a1
     | cmp k k2 = a2
     | otherwise = a3
- 
 
 claves::Diccionario clave valor->[clave]
 claves d = claves_estr (estructura d)
   where
     claves_estr (Nothing) = []
     claves_estr (Just a) =  map (\(k,v) -> k) $ hojas a
-
+    
 {- Diccionarios de prueba: -}
 
 dicc1::Diccionario Int String
