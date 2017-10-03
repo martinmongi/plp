@@ -60,10 +60,11 @@ testsEj5 = test [
   22 ~=? evaluar (truncar 0 6 arbolito3)
   ]
 
+diccVacio::Diccionario Int String
+diccVacio = vacio (<)
+
 testsEj6 = test [
-  0 ~=? 0 --Cambiar esto por tests verdaderos.
-  -- isNothing (estructura (vacio (\x-> \y-> False))) ~=? True,
-  -- cmp (vacio (\x-> \y-> (x == 42 && y == 1337))) 42 1337 ~=? True
+  [] ~=? claves diccVacio
   ]
 
 testsEj7 = test [
