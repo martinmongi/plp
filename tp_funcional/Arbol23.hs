@@ -111,7 +111,9 @@ truncar reemplazo n arbol =
         Al truncarse, resuelve al reemplazo.
         Al extenderse, se propaga a los subárboles.
 -}
-type Arbol23Truncable a b = Arbol23 (Maybe a, Arbol23 a b) b
+
+type HojaTruncable a b = (Maybe a, Arbol23 a b)
+type Arbol23Truncable a b = Arbol23 (HojaTruncable a b) b
 
 
 {- Convierte un árbol en truncable. -}
@@ -121,8 +123,12 @@ truncable arbol    = Hoja (Nothing, arbol) -- truncable, puede extenderse
 
 {- Extiende un árbol truncable, reemplazando cada hoja por su siguienteNivel. -}
 extender :: Arbol23Truncable a b -> Arbol23Truncable a b
-extender = foldA23 fHoja Dos Tres where
-  fHoja (m, arbol) = siguienteNivel arbol
+extender = foldA23 extenderHoja Dos Tres
+
+extenderHoja :: HojaTruncable a b -> Arbol23Truncable a b
+extenderHoja (m, arbol) = case m of
+    Just x -> Hoja (Just x, Hoja x)
+    Nothing -> siguienteNivel arbol
 
 
 {- Dado un árbol, devuelve su equivalente truncable por 1 nivel. -}
