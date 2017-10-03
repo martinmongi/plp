@@ -1,10 +1,5 @@
 TODO
 
-Escribir tests de lo que falta
-
-Arbol
-Ejercicio 4: truncar (no pasa los tests)
-
 Diccionario
 Ejercicio 8: obtener
 Ejercicio 9: claves
@@ -16,6 +11,7 @@ Arbol
 Ejercicio 1: foldA23
 Ejercicio 2: hojas, internos, esHoja
 Ejercicio 3: mapA23
+Ejercicio 4: truncar
 Ejercicio 5: evaluar
 
 Diccionario
