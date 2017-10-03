@@ -1,0 +1,21 @@
+TODO
+
+Arbol
+Ejercicio 4: truncar (Hay un bug: truncar 0 3 arbolito4 no cambia las hojas por 0)
+
+Diccionario
+Ejercicio 8: obtener
+Ejercicio 9: claves
+Ejercicio 10: busquedaDelTesoro
+
+DONE
+
+Arbol
+Ejercicio 1: foldA23
+Ejercicio 2: hojas, internos, esHoja
+Ejercicio 3: mapA23
+Ejercicio 5: evaluar
+
+Diccionario
+Ejercicio 6: vacio
+Ejercicio 7: definir
