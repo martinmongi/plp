@@ -93,7 +93,7 @@ truncar z n arbol = foldNat (Hoja z) (crecer z arbol) n
 
 
 crecer :: a -> Arbol23 a b -> (Arbol23 a b -> Arbol23 a b)
-crecer z o a = truncarNothings z (hastaNivel (altura a) (igualConNumeros o))
+crecer z o a = truncarNothings z (maybeHastaNivel (altura a) (conNiveles o))
 
 altura :: Arbol23 a b -> Integer
 altura = foldA23 fHoja fDos fTres
@@ -102,8 +102,8 @@ altura = foldA23 fHoja fDos fTres
     fDos _ x y = 1 + max x y
     fTres _ _ x y z = 1 + maximum [x, y, z]
 
-igualConNumeros :: Arbol23 a b -> Arbol23 (a, Integer) (b, Integer)
-igualConNumeros = foldA23 h d t
+conNiveles :: Arbol23 a b -> Arbol23 (a, Integer) (b, Integer)
+conNiveles = foldA23 h d t
   where
     h x = Hoja (x, 1)
     d x r1 r2 = inc (Dos (x, 0) r1 r2)
@@ -111,8 +111,8 @@ igualConNumeros = foldA23 h d t
     inc = mapA23 inc' inc'
     inc' (x, n) = (x, n+1)
 
-hastaNivel :: Integer -> Arbol23 (a, Integer) (b, Integer) -> Arbol23 (Maybe a) b
-hastaNivel n = foldA23 h d t
+maybeHastaNivel :: Integer -> Arbol23 (a, Integer) (b, Integer) -> Arbol23 (Maybe a) b
+maybeHastaNivel n = foldA23 h d t
   where
     h (x, xn) = if xn <= n then Hoja (Just x) else z
     d (x, xn) r1 r2 = if xn < n then Dos x r1 r2 else Dos x z z
