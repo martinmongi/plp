@@ -88,58 +88,43 @@ foldNat z f n = case n of
 --Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el
 --resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
-truncar :: a -> Integer -> Arbol23 a b -> Arbol23 a b
-truncar reemplazo n arbol =
-    (truncarTruncable reemplazo) $ foldNat (truncable arbol) extender n
-
-{- Un "árbol truncable" es un Arbol23 que guarda un subárbol en cada nodo, y
-   puede truncarse o extenderse en las hojas de la frontera.
-   Además, para distinguir las hojas que se reemplazan al truncar usa los tipos:
-   - Fija x:
-        Al truncarse, resuelve a x.
-   - Frontera arbol:
-        Al truncarse, resuelve al reemplazo.
-        Al extenderse, se propaga a los subárboles.
--}
-
-data HojaTruncable a b = Fija a | Frontera (Arbol23 a b)
-type Arbol23Truncable a b = Arbol23 (HojaTruncable a b) b
+truncar :: a -> Integer -> (Arbol23 a b -> Arbol23 a b)
+truncar z n arbol = foldNat (Hoja z) (crecer z arbol) n
 
 
-{- Convierte un árbol en truncable. -}
-truncable :: Arbol23 a b -> Arbol23Truncable a b
-truncable arbol = Hoja (Frontera arbol) -- truncable, puede extenderse
+crecer :: a -> Arbol23 a b -> (Arbol23 a b -> Arbol23 a b)
+crecer z o a = truncarNothings z (hastaNivel (altura a) (igualConNumeros o))
 
-
-{- Extiende un árbol truncable, reemplazando cada hoja por su siguienteNivel. -}
-extender :: Arbol23Truncable a b -> Arbol23Truncable a b
-extender = foldA23 extenderHoja Dos Tres
-
-extenderHoja :: HojaTruncable a b -> Arbol23Truncable a b
-extenderHoja ht = case ht of
-    Fija x -> Hoja (Fija x)
-    Frontera arbol -> siguienteNivel arbol
-
-
-{- Dado un árbol, devuelve su equivalente truncable por 1 nivel. -}
-siguienteNivel :: Arbol23 a b -> Arbol23Truncable a b
-siguienteNivel a = case a of
-    Hoja x -> Hoja (Fija x)
-    Dos x a1 a2 -> Dos x (t a1) (t a2)
-    Tres x y a1 a2 a3 -> Tres x y (t a1) (t a2) (t a3)
+altura :: Arbol23 a b -> Integer
+altura = foldA23 fHoja fDos fTres
   where
-    t = truncable
+    fHoja x = 1
+    fDos _ x y = 1 + max x y
+    fTres _ _ x y z = 1 + maximum [x, y, z]
 
+igualConNumeros :: Arbol23 a b -> Arbol23 (a, Integer) (b, Integer)
+igualConNumeros = foldA23 h d t
+  where
+    h x = Hoja (x, 1)
+    d x r1 r2 = inc (Dos (x, 0) r1 r2)
+    t x y r1 r2 r3 = inc (Tres (x, 0) (y, 0) r1 r2 r3)
+    inc = mapA23 inc' inc'
+    inc' (x, n) = (x, n+1)
 
--- {- Transforma un árbol truncable en un árbol plano, reemplazando las hojas
---    truncables por el valor indicado por el valor indicado. -}
-truncarTruncable :: a -> Arbol23Truncable a b -> Arbol23 a b
-truncarTruncable reemplazo = let
-  f ht = case ht of
-    Fija a -> a
-    Frontera _-> reemplazo -- truncado!
-  in mapA23 f id
+hastaNivel :: Integer -> Arbol23 (a, Integer) (b, Integer) -> Arbol23 (Maybe a) b
+hastaNivel n = foldA23 h d t
+  where
+    h (x, xn) = if xn <= n then Hoja (Just x) else z
+    d (x, xn) r1 r2 = if xn < n then Dos x r1 r2 else Dos x z z
+    t (x, xn) (y, yn) r1 r2 r3 = if xn < n then Tres x y r1 r2 r3 else Tres x y z z z
+    z = Hoja Nothing
 
+truncarNothings :: a -> Arbol23 (Maybe a) b -> Arbol23 a b
+truncarNothings z = mapA23 f id
+  where
+    f h = case h of
+      Just x -> x
+      Nothing -> z
 
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
