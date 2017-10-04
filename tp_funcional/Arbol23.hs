@@ -55,7 +55,7 @@ internos = foldA23 fHoja fDos fTres
 
 --Lista las hojas de izquierda a derecha.
 hojas :: Arbol23 a b -> [a]
-hojas x = foldA23 fHoja fDos fTres x
+hojas = foldA23 fHoja fDos fTres
   where
     fHoja x = [x]
     fDos _ x y = x ++ y
