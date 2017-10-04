@@ -11,8 +11,8 @@ dif1(N1, N2) :- N2 is N1 + 1.
 dif1(N1, N2) :- N2 is N1 - 1.
 
 %adyacente(+F1, +C1, ?F2, ?C2)
-adyacente(F1, C1, F2, C2) :- dif1(C1, C2).
-adyacente(F1, C1, F2, C2) :- dif1(F1, F2).
+adyacente( _, C1,  _, C2) :- dif1(C1, C2).
+adyacente(F1,  _, F2,  _) :- dif1(F1, F2).
 adyacente(F1, C1, F2, C2) :- dif1(C1, C2), dif1(F1, F2).
 
 %enRango(+Matriz, +Fila, +Columna)
