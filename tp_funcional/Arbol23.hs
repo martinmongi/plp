@@ -80,20 +80,21 @@ mapA23 fH fI = foldA23 mHoja mDos mTres
 incrementarHojas :: Num a => Arbol23 a b -> Arbol23 a b
 incrementarHojas = mapA23 (+1) id
 
-foldNat :: a -> (a -> a) -> Integer -> a
-foldNat z f n = case n of
+foldNat :: a -> Integer -> (a -> a) -> a
+foldNat z n f = case n of
   0 -> z
-  _ -> f (foldNat z f (n-1))
+  _ -> f (foldNat z (n-1) f)
 
 --Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el
 --resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
 truncar :: a -> Integer -> (Arbol23 a b -> Arbol23 a b)
-truncar z n arbol = foldNat (Hoja z) (crecer z arbol) n
-
+truncar z n = foldNat z' n . crecer z
+  where
+    z' = Hoja z
 
 crecer :: a -> Arbol23 a b -> (Arbol23 a b -> Arbol23 a b)
-crecer z o a = truncarNothings z (maybeHastaNivel (altura a) (conNiveles o))
+crecer z o = hastaNivel (conNiveles o) z . altura
 
 altura :: Arbol23 a b -> Integer
 altura = foldA23 fHoja fDos fTres
@@ -111,20 +112,13 @@ conNiveles = foldA23 h d t
     inc = mapA23 inc' inc'
     inc' (x, n) = (x, n+1)
 
-maybeHastaNivel :: Integer -> Arbol23 (a, Integer) (b, Integer) -> Arbol23 (Maybe a) b
-maybeHastaNivel n = foldA23 h d t
+hastaNivel :: Arbol23 (a, Integer) (b, Integer) -> a -> Integer -> Arbol23 a b
+hastaNivel a z n = foldA23 h d t a
   where
-    h (x, xn) = if xn <= n then Hoja (Just x) else z
-    d (x, xn) r1 r2 = if xn < n then Dos x r1 r2 else Dos x z z
-    t (x, xn) (y, yn) r1 r2 r3 = if xn < n then Tres x y r1 r2 r3 else Tres x y z z z
-    z = Hoja Nothing
-
-truncarNothings :: a -> Arbol23 (Maybe a) b -> Arbol23 a b
-truncarNothings z = mapA23 f id
-  where
-    f h = case h of
-      Just x -> x
-      Nothing -> z
+    h (x, xn) = if xn <= n then Hoja x else z'
+    d (x, xn) r1 r2 = if xn < n then Dos x r1 r2 else Dos x z' z'
+    t (x, xn) (y, yn) r1 r2 r3 = if xn < n then Tres x y r1 r2 r3 else Tres x y z' z' z'
+    z' = Hoja z
 
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
