@@ -80,45 +80,22 @@ mapA23 fH fI = foldA23 mHoja mDos mTres
 incrementarHojas :: Num a => Arbol23 a b -> Arbol23 a b
 incrementarHojas = mapA23 (+1) id
 
-foldNat :: a -> Integer -> (a -> a) -> a
-foldNat z n f = case n of
+foldNat :: a -> (a -> a) -> Integer -> a
+foldNat z f n = case n of
   0 -> z
-  _ -> f (foldNat z (n-1) f)
+  _ -> f (foldNat z f (n-1))
 
 --Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el
 --resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
 truncar :: a -> Integer -> (Arbol23 a b -> Arbol23 a b)
-truncar z n = foldNat z' n . crecer z
-  where
-    z' = Hoja z
+truncar z n = (foldNat (const (Hoja z)) crecer n)
 
-crecer :: a -> Arbol23 a b -> (Arbol23 a b -> Arbol23 a b)
-crecer z o = hastaNivel (conNiveles o) z . altura
-
-altura :: Arbol23 a b -> Integer
-altura = foldA23 fHoja fDos fTres
+crecer :: (Arbol23 a b -> Arbol23 a b) -> (Arbol23 a b -> Arbol23 a b)
+crecer f = foldA23 Hoja fDos fTres
   where
-    fHoja x = 1
-    fDos _ x y = 1 + max x y
-    fTres _ _ x y z = 1 + maximum [x, y, z]
-
-conNiveles :: Arbol23 a b -> Arbol23 (a, Integer) (b, Integer)
-conNiveles = foldA23 h d t
-  where
-    h x = Hoja (x, 1)
-    d x r1 r2 = inc (Dos (x, 0) r1 r2)
-    t x y r1 r2 r3 = inc (Tres (x, 0) (y, 0) r1 r2 r3)
-    inc = mapA23 inc' inc'
-    inc' (x, n) = (x, n+1)
-
-hastaNivel :: Arbol23 (a, Integer) (b, Integer) -> a -> Integer -> Arbol23 a b
-hastaNivel a z n = foldA23 h d t a
-  where
-    h (x, xn) = if xn <= n then Hoja x else z'
-    d (x, xn) r1 r2 = if xn < n then Dos x r1 r2 else Dos x z' z'
-    t (x, xn) (y, yn) r1 r2 r3 = if xn < n then Tres x y r1 r2 r3 else Tres x y z' z' z'
-    z' = Hoja z
+    fDos x r1 r2 = Dos x (f r1) (f r2)
+    fTres x y r1 r2 r3 = Tres x y (f r1) (f r2) (f r3)
 
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
