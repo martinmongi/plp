@@ -89,7 +89,7 @@ foldNat z f n = case n of
 --resto del árbol por una hoja con el valor indicado.
 --Funciona para árboles infinitos.
 truncar :: a -> Integer -> (Arbol23 a b -> Arbol23 a b)
-truncar z n = (foldNat (const (Hoja z)) crecer n)
+truncar z = foldNat (const (Hoja z)) crecer
 
 crecer :: (Arbol23 a b -> Arbol23 a b) -> (Arbol23 a b -> Arbol23 a b)
 crecer f = foldA23 Hoja fDos fTres
