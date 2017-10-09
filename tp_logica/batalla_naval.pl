@@ -32,12 +32,27 @@ adyacenteEnRango(T, F1, C1, F2, C2) :-
 %------------------Predicados a definir:------------------%
 
 %contenido(+?Tablero, ?Fila, ?Columna, ?Contenido)
+contenido(T, F, C, Cont) :- nth1(F, T, Fila), nth1(C, Fila, Cont).
+
+%vacio(+?Tablero, ?Fila, ?Columna)
+vacio(T, F, C) :- contenido(T, F, C, Cont), var(Cont).
 
 %disponible(+Tablero, ?Fila, ?Columna)
+disponible(T, F, C) :- vacio(T, F, C), forall(adyacenteEnRango(T, F, C, F_1, C_1), vacio(T, F_1, C_1)).
 
 %puedoColocar(+CantPiezas, ?Direccion, +Tablero, ?Fila, ?Columna)
+puedoColocar(1, _, T, F, C) :- disponible(T, F, C).
+puedoColocar(N, vertical, T, F, C) :- disponible(T, F, C), N1 is N - 1, F1 is F + 1, puedoColocar(N1, vertical, T, F1, C).
+puedoColocar(N, horizontal, T, F, C) :- disponible(T, F, C), N1 is N - 1, C1 is C + 1, puedoColocar(N1, horizontal, T, F, C1).
+
+%hayBarco(+CantPiezas, ?Direccion, +Tablero, ?Fila, ?Columna)
+hayBarco(1, _, T, F, C) :- contenido(T, F, C, o).
+hayBarco(N, vertical, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, F1 is F + 1, hayBarco(N1, vertical, T, F1, C).
+hayBarco(N, horizontal, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, C1 is C + 1, hayBarco(N1, horizontal, T, F, C1).
 
 %ubicarBarcos(+Barcos, +?Tablero)
+ubicarBarcos([], T).
+ubicarBarcos([B|Bs], T) :- puedoColocar(B, Dir, T, F, C), hayBarco(B, Dir, T, F, C), ubicarBarcos(Bs, T).
 
 %completarConAgua(+?Tablero)
 
