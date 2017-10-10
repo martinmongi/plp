@@ -54,7 +54,15 @@ hayBarco(N, horizontal, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, C1 is C 
 ubicarBarcos([], T).
 ubicarBarcos([B|Bs], T) :- puedoColocar(B, Dir, T, F, C), hayBarco(B, Dir, T, F, C), ubicarBarcos(Bs, T).
 
+% completarCasilleroConAgua(+Casillero, ?Resultado)
+completarCasilleroConAgua(X, ~) :- \+ atom(X),!.
+completarCasilleroConAgua(o, o).
+
+%completarConAgua(+Original, ?Completo)
+completarFilaConAgua(X, Y) :- maplist(completarCasilleroConAgua, X, Y).
+
 %completarConAgua(+?Tablero)
+completarConAgua(X, Y) :- maplist(completarFilaConAgua, X, Y).
 
 %golpear(+Tablero, +NumFila, +NumColumna, -NuevoTab)
 
