@@ -119,7 +119,7 @@ hastaNivel z n = foldA23 h d t
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
 evaluar :: Arbol23 a (a -> a -> a) -> a
-evaluar = foldA23 id (\ f a b -> f a b) (\ f g a b c -> g (f a b) c)
+evaluar = foldA23 id id (\ f g a b -> g (f a b))
 
 --Ejemplo:
 --evaluar (truncar 0 6 arbolito3) = 22 = (1*2-3)+(2*3-4)+(3*4-5)+(4*5-6)
