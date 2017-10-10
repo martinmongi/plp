@@ -1,3 +1,6 @@
+% para recargar el fuente con "r." en vez de "[batalla_naval]."
+r :- [batalla_naval].
+
 %------------------Predicados predefinidos:------------------%
 
 %fliplength(?Longitud, ?Lista)
