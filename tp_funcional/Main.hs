@@ -8,11 +8,11 @@ import Test.HUnit
 
 {- Función a implementar. -}
 
-búsquedaDelTesoro::Eq a=>a->(a->Bool)->Diccionario a a->Maybe a
-búsquedaDelTesoro p f d = fst.head.snd $ break nadaOTesoro $ iterate buscarProximaPista (Just p,d)
+búsquedaDelTesoro :: Eq a => a -> (a->Bool) -> Diccionario a a -> Maybe a
+búsquedaDelTesoro p f d = until nadaOTesoro buscarProximaPista (Just p)
   where
-    nadaOTesoro = (\(p,d) -> (isNothing p) || (f (fromJust p)))
-    buscarProximaPista = (\(p,d) -> if isNothing p then (Nothing,d) else (obtener (fromJust p) d, d))
+    nadaOTesoro = maybe True f
+    buscarProximaPista = maybe Nothing (flip obtener $ d)
 
 {- Diccionarios de prueba: -}
 
