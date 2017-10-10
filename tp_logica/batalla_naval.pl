@@ -54,7 +54,7 @@ hayBarco(N, vertical, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, F1 is F + 
 hayBarco(N, horizontal, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, C1 is C + 1, hayBarco(N1, horizontal, T, F, C1).
 
 %ubicarBarcos(+Barcos, +?Tablero)
-ubicarBarcos([], T).
+ubicarBarcos([], _).
 ubicarBarcos([B|Bs], T) :- puedoColocar(B, Dir, T, F, C), hayBarco(B, Dir, T, F, C), ubicarBarcos(Bs, T).
 
 %completarCasilleroConAgua(+Casillero, ?Resultado)
