@@ -64,7 +64,14 @@ completarFilaConAgua(X, Y) :- maplist(completarCasilleroConAgua, X, Y).
 %completarConAgua(+?Tablero)
 completarConAgua(X, Y) :- maplist(completarFilaConAgua, X, Y).
 
+%reemplazar(+Lista, +Indice, +Elemento, -Resultado)
+reemplazar([], _, _, []).
+reemplazar([X|Xs], 1, Z, [Z|Xs]).
+reemplazar([X|Xs], N, Z, [X|Ys]) :- N > 1, N1 is N - 1, reemplazar(Xs, N1, Z, Ys).
+
 %golpear(+Tablero, +NumFila, +NumColumna, -NuevoTab)
+golpear(T, F, C, T) :- contenido(T, F, C, ~).
+golpear(T, F, C, NuevoT) :- contenido(T, F, C, o), nth1(F, T, Fila), reemplazar(Fila, C, ~, NuevaFila), reemplazar(T, F, NuevaFila, NuevoT).
 
 % Completar instanciación soportada y justificar.
 %atacar(Tablero, Fila, Columna, Resultado, NuevoTab)
