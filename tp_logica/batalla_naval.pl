@@ -67,16 +67,22 @@ completarFilaConAgua(F) :- maplist(completarCasilleroConAgua, F).
 completarCasilleroConAgua(~) :- !.
 completarCasilleroConAgua(o).
 
-%reemplazar(+Lista, +Indice, +Elemento, -Resultado)
-reemplazar([], _, _, []).
-reemplazar([X|Xs], 1, Z, [Z|Xs]).
-reemplazar([X|Xs], N, Z, [X|Ys]) :- N > 1, N1 is N - 1, reemplazar(Xs, N1, Z, Ys).
-
 %golpear(+Tablero, +NumFila, +NumColumna, -NuevoTab)
-golpear(T, F, C, T) :- contenido(T, F, C, ~).
-golpear(T, F, C, NuevoT) :- contenido(T, F, C, o), nth1(F, T, Fila),
-                            reemplazar(Fila, C, ~, NuevaFila),
-                            reemplazar(T, F, NuevaFila, NuevoT).
+golpear(T, F, C, T) :- contenido(T, F, C, ~), !.
+golpear(T, F, C, NuevoT) :- contenido(T, F, C, o),
+                            contenido(NuevoT, F, C, ~),
+                            igualesSalvo(F, C, T, NuevoT).
+
+igualesSalvo(F0, C0, T1, T2) :-
+  matriz(T1, FM, CM), matriz(T2, FM, CM), % coinciden las dimensiones
+  foreach(between(1, FM, F),
+    foreach(between(1, CM, C),
+      igualesSalvoEn(F0, C0, F, C, T1, T2))).  % las celdas son iguales o la F0 C0
+
+igualesSalvoEn( _,  _,  F,  C, T1, T2) :- contenido(T1, F, C, X),
+                                          contenido(T2, F, C, X).
+igualesSalvoEn(F0, C0, F0, C0,  _,  _).
+
 
 % Completar instanciación soportada y justificar.
 %atacar(Tablero, Fila, Columna, Resultado, NuevoTab)
