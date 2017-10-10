@@ -16,14 +16,12 @@ data Diccionario clave valor = Dicc {cmp :: Comp clave, estructura :: Maybe (Est
 {- Funciones provistas por la cátedra. -}
 
 --Inserta un nuevo par clave, valor en una estructura que ya tiene al menos un dato.
-insertar::clave->valor->Comp clave->Estr clave valor-> Estr clave valor
+insertar :: clave -> valor -> Comp clave -> Estr clave valor -> Estr clave valor
 insertar c v comp a23 = interceptar (insertarYPropagar c v comp a23) id (\s1 (c1, s2)->Dos c1 s1 s2)
 
 --Maneja el caso de que la segunda componente sea Nothing.
-interceptar::(a,Maybe b)->(a->c)->(a->b->c)->c
-interceptar (x,y) f1 f2 = case y of
-                   Nothing -> f1 x
-                   Just z -> f2 x z
+interceptar :: (a, Maybe b) -> (a -> c) -> (a -> b -> c) -> c
+interceptar (x, y) f1 f2 = maybe (f1 x) (f2 x) y
 
 {- Inserta una clave con su valor correspondiente. Si se actualiza el índice, el cambio se propaga hacia arriba
    para mantener balanceado el árbol.
@@ -68,51 +66,45 @@ insertarYPropagar c v comp a23 = let rec = insertarYPropagar c v comp in case a2
                         (\s1 (c3, s2) -> (Dos c1 a1 a2, Just(c2, Dos c3 s1 s2)))
 
 --Se asume que la lista no tiene claves repetidas.
-definirVarias::[(clave,valor)]->Diccionario clave valor->Diccionario clave valor
+definirVarias :: [(clave, valor)] -> Diccionario clave valor -> Diccionario clave valor
 definirVarias = (flip.foldr.uncurry) definir
 
 {- Funciones a implementar. -}
 
-vacio::Comp clave->Diccionario clave valor
+vacio :: Comp clave -> Diccionario clave valor
 vacio c = Dicc c Nothing
 
 definir :: clave -> valor -> Diccionario clave valor -> Diccionario clave valor
-definir k v d = if isNothing e
-  then Dicc c (Just (Hoja (k, v)))
-  else Dicc c (Just (insertar k v c (fromJust e)))
-    where
-      c = cmp d
-      e = estructura d
-
-obtener::Eq clave=>clave->Diccionario clave valor->Maybe valor
-obtener k d = obtener_estr (cmp d) k (estructura d)
+definir k v d = Dicc comp (Just (definir' (estructura d)))
   where
-    obtener_estr cmp k (Nothing) = Nothing
-    obtener_estr cmp k (Just a) = (\(Hoja (k',v))-> if k == k' then Just v else Nothing) $ head $ dropWhile (not.esHoja) $ iterate (bajar_nivel cmp k) a
+    definir' = maybe (Hoja (k, v)) (insertar k v comp)
+    comp = cmp d
 
-bajar_nivel::Eq clave=>(clave->clave->Bool)->clave->Arbol23 (clave, valor) clave->Arbol23 (clave, valor) clave
-bajar_nivel cmp k (Hoja (k', v)) = Hoja (k', v)
-bajar_nivel cmp k (Dos k1 a1 a2)
-    | cmp k k1 = a1
-    | otherwise = a2
-bajar_nivel cmp k (Tres k1 k2 a1 a2 a3)
-    | cmp k k1 = a1
-    | cmp k k2 = a2
-    | otherwise = a3
-
-claves::Diccionario clave valor->[clave]
-claves d = claves_estr (estructura d)
+obtener :: Eq clave => clave -> Diccionario clave valor -> Maybe valor
+obtener k d = maybe Nothing obtener' (estructura d)
   where
-    claves_estr (Nothing) = []
-    claves_estr (Just a) =  map (\(k,v) -> k) $ hojas a
-    
+    obtener' = valor . until esHoja (bajarNivel (cmp d) k)
+    valor (Hoja (k', v)) = if k == k' then Just v else Nothing
+
+bajarNivel :: Eq clave => Comp clave -> clave -> (Estr clave valor -> Estr clave valor)
+bajarNivel comp k a23 = case a23 of
+  Hoja h                          -> Hoja h
+  Dos  k1    a1 a2    | comp k k1 -> a1
+  Dos  k1    a1 a2    | otherwise -> a2
+  Tres k1 k2 a1 a2 a3 | comp k k1 -> a1
+  Tres k1 k2 a1 a2 a3 | comp k k2 -> a2
+  Tres k1 k2 a1 a2 a3 | otherwise -> a3
+
+claves :: Diccionario clave valor -> [clave]
+claves d = maybe [] ((map fst) . hojas) (estructura d)
+
 {- Diccionarios de prueba: -}
 
-dicc1::Diccionario Int String
-dicc1 = definirVarias [(0,"Hola"),(-10,"Chau"),(15,"Felicidades"),(2,"etc."),(9,"a")] (vacio (<))
+dicc1 :: Diccionario Int String
+dicc1 = definirVarias [(0,"Hola"), (-10,"Chau"), (15,"Felicidades"), (2,"etc."), (9,"a")] (vacio (<))
 
-dicc2::Diccionario String String
-dicc2 = definirVarias [("inicio","casa"),("auto","flores"),("calle","auto"),("casa","escalera"),("ropero","alfajor"),("escalera","ropero")] (vacio (<))
+dicc2 :: Diccionario String String
+dicc2 = definirVarias [("inicio","casa"), ("auto","flores"), ("calle","auto"), ("casa","escalera"), ("ropero","alfajor"), ("escalera","ropero")] (vacio (<))
 
-dicc3::Diccionario Int String
-dicc3 = definirVarias [(0,"Hola"),(-10,"Chau"),(15,"Felicidades"),(2,"etc."),(9,"a")] (vacio (\x y->x `mod` 5 < y `mod` 5))
+dicc3 :: Diccionario Int String
+dicc3 = definirVarias [(0,"Hola"), (-10,"Chau"), (15,"Felicidades"), (2,"etc."), (9,"a")] (vacio (\x y->x `mod` 5 < y `mod` 5))
