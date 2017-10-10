@@ -77,6 +77,11 @@ golpear(T, F, C, NuevoT) :- contenido(T, F, C, o), nth1(F, T, Fila),
 
 % Completar instanciación soportada y justificar.
 %atacar(Tablero, Fila, Columna, Resultado, NuevoTab)
+atacar(T, F, C, agua, T) :- golpear(T, F, C, T).
+atacar(T, F, C, hundido, NuevoT) :- contenido(T, F, C, o), golpear(T, F, C, NuevoT),
+                                    forall(adyacenteEnRango(T, F, C, F_1, C_1), contenido(T, F_1, C_1, ~)).
+atacar(T, F, C, tocado, NuevoT) :- contenido(T, F, C, o), golpear(T, F, C, NuevoT),
+                                   \+ forall(adyacenteEnRango(T, F, C, F_1, C_1), contenido(T, F_1, C_1, ~)).
 
 %------------------Tests:------------------%
 
