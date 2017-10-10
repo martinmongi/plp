@@ -1,3 +1,6 @@
+% para recargar el fuente con "r." en vez de "[batalla_naval]."
+r :- [batalla_naval].
+
 %------------------Predicados predefinidos:------------------%
 
 %fliplength(?Longitud, ?Lista)
@@ -51,18 +54,18 @@ hayBarco(N, vertical, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, F1 is F + 
 hayBarco(N, horizontal, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, C1 is C + 1, hayBarco(N1, horizontal, T, F, C1).
 
 %ubicarBarcos(+Barcos, +?Tablero)
-ubicarBarcos([], T).
+ubicarBarcos([], _).
 ubicarBarcos([B|Bs], T) :- puedoColocar(B, Dir, T, F, C), hayBarco(B, Dir, T, F, C), ubicarBarcos(Bs, T).
 
-%completarCasilleroConAgua(+Casillero, ?Resultado)
-completarCasilleroConAgua(X, ~) :- \+ atom(X),!.
-completarCasilleroConAgua(o, o).
-
-%completarConAgua(+Original, ?Completo)
-completarFilaConAgua(X, Y) :- maplist(completarCasilleroConAgua, X, Y).
-
 %completarConAgua(+?Tablero)
-completarConAgua(X, Y) :- maplist(completarFilaConAgua, X, Y).
+completarConAgua(T) :- maplist(completarFilaConAgua, T).
+
+%completarFilaConAgua(+?Fila)
+completarFilaConAgua(F) :- maplist(completarCasilleroConAgua, F).
+
+%completarCasilleroConAgua(+?Casillero)
+completarCasilleroConAgua(~) :- !.
+completarCasilleroConAgua(o).
 
 %reemplazar(+Lista, +Indice, +Elemento, -Resultado)
 reemplazar([], _, _, []).
