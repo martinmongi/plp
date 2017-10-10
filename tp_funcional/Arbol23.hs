@@ -1,7 +1,7 @@
 module Arbol23 where
 
 data Arbol23 a b = Hoja a
-                 | Dos  b   (Arbol23 a b) (Arbol23 a b) 
+                 | Dos  b   (Arbol23 a b) (Arbol23 a b)
                  | Tres b b (Arbol23 a b) (Arbol23 a b) (Arbol23 a b)
 
 {- Funciones para mostrar el árbol. -}
@@ -47,15 +47,16 @@ foldA23 fHoja fDos fTres t = case t of
 
 --Lista en preorden de los internos del árbol.
 internos :: Arbol23 a b -> [b]
-internos = foldA23 (const []) fDos fTres
-  where fDos  k     x y   = [k]      ++ x ++ y
-        fTres k1 k2 x y z = [k1, k2] ++ x ++ y ++ z
+internos = foldA23 (const [])
+                   (\ k     x y   -> [k] ++ x ++ y)
+                   (\ k1 k2 x y z -> [k1, k2] ++ x ++ y ++ z)
 
 --Lista las hojas de izquierda a derecha.
 hojas :: Arbol23 a b -> [a]
-hojas = foldA23 (:[]) fDos fTres
-  where fDos  _   x y   = x ++ y
-        fTres _ _ x y z = x ++ y ++ z
+hojas = foldA23 (:[])
+                (\ _ x y -> x ++ y)
+                (\ _ _ x y z -> x ++ y ++ z)
+
 
 -- True si el arbol es hoja, falso si es Dos o Tres
 esHoja :: Arbol23 a b -> Bool
@@ -65,10 +66,9 @@ esHoja a = case a of
 
 -- Map de un Arbol23 a otro
 mapA23 :: (a -> c) -> (b -> d) -> Arbol23 a b -> Arbol23 c d
-mapA23 fH fI = foldA23 mHoja mDos mTres
-  where mHoja x              = Hoja (fH x)
-        mDos  k     r1 r2    = Dos  (fI k)          r1 r2
-        mTres k1 k2 r1 r2 r3 = Tres (fI k1) (fI k2) r1 r2 r3
+mapA23 f g = foldA23 (Hoja . f)
+                     (Dos . g)
+                     (\ x -> Tres (g x) . g)
 
 --Ejemplo de uso de mapA23.
 --Incrementa en 1 el valor de las hojas.
