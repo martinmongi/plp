@@ -1,6 +1,6 @@
 \documentclass[a4paper]{article}
 
-\usepackage[spanish]{babel}
+% \usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -37,9 +37,9 @@
 
 \begin{raggedright}
 \vspace{3cm}
-{\Huge \bfseries Trabajo Práctico de Programación Funcional\\}
+{\Huge \bfseries Trabajo Práctico de Programación Lógica\\}
 \rule{\textwidth}{0.02in}
-\large Martes 12 de Septiembre de 2017 \hfill Paradigmas de Lenguajes de Programación\\
+\large Martes 17 de Octubre de 2017 \hfill Paradigmas de Lenguajes de Programación\\
 \vspace{1cm}
 \end{raggedright}
 
@@ -54,14 +54,15 @@
 \begin{table}[h]
 \centering
 \begin{tabular}{|l@{\hspace{4ex}}c@{\hspace{4ex}}l|}
-	
         \hline
         \rule{0pt}{1.2em}Integrante & LU & Correo electr\'onico\\[0.2em]
         \hline
-        \rule{0pt}{1.2em} Francisco Demartino & 348/14 &\tt demartino.francisco@gmail.com\\[0.2em]
+        \rule{0pt}{1.2em} Francisco Demartino    & 348/14 &\tt demartino.francisco@gmail.com\\[0.2em]
         \rule{0pt}{1.2em} Mart\'in Mongi Bad\'ia & 422/13 &\tt martinmongi@gmail.com\\[0.2em]
         \hline
-        
+        \rule{0pt}{1.2em}Grupo: "Demo" &  & \\[0.2em]
+        \hline
+
 \end{tabular}
 \end{table}
 
@@ -92,421 +93,177 @@ http://www.fcen.uba.ar
 
 \clearpage
 
-\section{\texttt{Main.hs}}
-
+\section{\texttt{batalla\_naval.pl}}
 \begin{verbatim}
-import Diccionario
-import Data.Maybe
-import Data.List
-import Arbol23
-import Test.HUnit
-
--- Este módulo sirve para utilizar el diccionario sin acceder a su estructura
--- interna. Pueden agregar otras funciones o casos de prueba.
-
-{- Función a implementar. -}
-
-búsquedaDelTesoro::Eq a=>a->(a->Bool)->Diccionario a a->Maybe a
-búsquedaDelTesoro p f d = fst.head.snd $ break nadaOTesoro $
-  iterate buscarProximaPista (Just p,d)
-  where
-    nadaOTesoro = (\(p,d) -> (isNothing p) || (f (fromJust p)))
-    buscarProximaPista (p,d) = if isNothing p
-      then (Nothing,d) else (obtener (fromJust p) d, d)
-
-{- Diccionarios de prueba: -}
-
-dicc1::Diccionario Int String
-dicc1 = definirVarias [
-  (0,"Hola"),
-  (-10,"Chau"),
-  (15,"Felicidades"),
-  (2,"etc."),
-  (9,"a")
-  ] (vacio (<))
-
-dicc2::Diccionario String String
-dicc2 = definirVarias [
-  ("inicio","casa"),
-  ("auto","flores"),
-  ("calle","auto"),
-  ("casa","escalera"),
-  ("ropero","alfajor"),
-  ("escalera","ropero")
-  ] (vacio (<))
-
-dicc3::Diccionario Int String
-dicc3 = definirVarias [
-  (0,"Hola"),
-  (-10,"Chau"),
-  (15,"Felicidades"),
-  (2,"etc."),
-  (9,"a")
-  ] (vacio (\x y->x `mod` 5 < y `mod` 5))
-
---Ejecución de los tests
-main :: IO Counts
-main = do runTestTT allTests
-
-allTests = test [
-  "ejercicio2" ~: testsEj2,
-  "ejercicio3" ~: testsEj3,
-  "ejercicio4" ~: testsEj4,
-  "ejercicio5" ~: testsEj5,
-  "ejercicio6" ~: testsEj6,
-  "ejercicio7" ~: testsEj7,
-  "ejercicio8" ~: testsEj8,
-  "ejercicio9" ~: testsEj9,
-  "ejercicio10" ~: testsEj10
-  ]
-
-testsEj2 = test [
-  [0,1,2,3,4,5,6,7] ~=? internos arbolito1,
-  "abcdefghi" ~=? hojas arbolito1,
-  [True,False,True] ~=? internos arbolito2,
-  [1,2,3,2,3,4,3,4,5,4] ~=? take 10 (hojas arbolito3)
-  ]
-
-testsEj3 = test [
-  [0,1,-1,5] ~=? hojas (incrementarHojas arbolito2)
-  ]
-
-testsEj4 = test [
-  [1,2,3,2,3,4,3,4,5,4,5,6,0,0,0,0,0] ~=? hojas (truncar 0 6 arbolito3),
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ~=? hojas (truncar 0 3 arbolito4)
-  ]
-
-testsEj5 = test [
-  22 ~=? evaluar (truncar 0 6 arbolito3)
-  ]
-
-diccVacio::Diccionario Int String
-diccVacio = vacio (<)
-
-testsEj6 = test [
-  True ~=? isNothing (estructura diccVacio),
-  [] ~=? claves diccVacio,
-  Nothing ~=? obtener 42 diccVacio
-  ]
-
-testsEj7 = test [
-  isNothing (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? False,
-  isJust (estructura (definir 1 2 (vacio (\x-> \y-> False)))) ~=? True,
-  "perro" ~=? fromJust (obtener 1 (definir 1 "perro" diccVacio))
-  ]
-
-testsEj8 = test [
-  "Hola" ~=? fromJust (obtener 0 dicc1),
-  "Chau" ~=? fromJust (obtener (-10) dicc1),
-  "Felicidades" ~=? fromJust (obtener 15 dicc1),
-  True ~=? isNothing (obtener 27 dicc1)
-  ]
-
-testsEj9 = test [
-  [-10,0,2,9,15] ~=? sort(claves dicc1)
-  ]
-
-testsEj10 = test [
-  Just "alfajor" ~=? búsquedaDelTesoro "inicio" ((=='a').head) dicc2,
-  Nothing ~=? búsquedaDelTesoro "auto" (=="alfajor") dicc2,
-  Just "alfajor" ~=? búsquedaDelTesoro "ropero" ((=='a').head) dicc2
-  ]
-\end{verbatim}
-
-\section{\texttt{Arbol23.hs}}
-\begin{verbatim}
-module Arbol23 where
-
-data Arbol23 a b = Hoja a |
-                   Dos b (Arbol23 a b) (Arbol23 a b) |
-                   Tres b b (Arbol23 a b) (Arbol23 a b) (Arbol23 a b)
-
-{- Funciones para mostrar el árbol. -}
-
-instance (Show a, Show b) => Show (Arbol23 a b) where
-    show = ("\n" ++) . (padTree 0 0 False)
-
-padlength::Int
-padlength = 5
-
-padTree:: (Show a, Show b) => Int -> Int -> Bool -> (Arbol23 a b)-> String
-padTree nivel acum doPad t = case t of
-  (Hoja x) -> initialPad ++ stuff x
-  (Dos x i d) -> initialPad ++ stuff x ++
-                  pad padlength ++ rec x False i ++ "\n" ++
-                  rec x True d ++ "\n"
-  (Tres x y i m d) -> initialPad ++ stuff x ++ --(' ':tail (stuff y)) ++
-                      pad padlength ++ rec x False i ++ "\n" ++
-                      pad levelPad ++ stuff y ++ pad padlength ++
-                      rec x False m ++ "\n" ++ rec x True d ++ "\n"
-  where l = length . stuff
-	levelPad = (padlength*nivel + acum)
-	initialPad = (if doPad then pad levelPad else "")
-	rec x = padTree (nivel+1) (acum+l x)
-
-stuff:: Show a => a -> String
-stuff x = if n > l then pad (n-l) ++ s else s
-  where s = show x
-        l = length s
-        n = padlength
-
-pad:: Int -> String
-pad i = replicate i ' '
-
-{- Funciones pedidas. -}
-
-foldA23 :: (a -> c) -> (b -> c -> c -> c) ->
-  (b -> b -> c -> c -> c -> c) -> Arbol23 a b -> c
-foldA23 fHoja fDos fTres t = case t of
-    Hoja x -> fHoja x
-    Dos k r1 r2 -> fDos k (foldA23' r1) (foldA23' r2)
-    Tres k1 k2 r1 r2 r3 -> fTres k1 k2
-      (foldA23' r1) (foldA23' r2) (foldA23' r3)
-  where
-    foldA23' = foldA23 fHoja fDos fTres
-
-
---Lista en preorden de los internos del árbol.
-internos :: Arbol23 a b -> [b]
-internos = foldA23 fHoja fDos fTres
-  where
-    fHoja _ = []
-    fDos k x y = [k] ++ x ++ y
-    fTres k1 k2 x y z = [k1, k2] ++ x ++ y ++ z
-
---Lista las hojas de izquierda a derecha.
-hojas :: Arbol23 a b -> [a]
-hojas x = foldA23 fHoja fDos fTres x
-  where
-    fHoja x = [x]
-    fDos _ x y = x ++ y
-    fTres _ _ x y z = x ++ y ++ z
-
--- True si el arbol es hoja, falso si es Dos o Tres
-esHoja :: Arbol23 a b -> Bool
-esHoja a = case a of
-  Hoja _    -> True
-  otherwise -> False
-
--- Map de un Arbol23 a otro
-mapA23 :: (a -> c) -> (b -> d) -> Arbol23 a b -> Arbol23 c d
-mapA23 fH fI = foldA23 mHoja mDos mTres
-  where
-    mHoja x = Hoja (fH x)
-    mDos k r1 r2 = Dos (fI k) r1 r2
-    mTres k1 k2 r1 r2 r3 = Tres (fI k1) (fI k2) r1 r2 r3
-
---Ejemplo de uso de mapA23.
---Incrementa en 1 el valor de las hojas.
-incrementarHojas :: Num a => Arbol23 a b -> Arbol23 a b
-incrementarHojas = mapA23 (+1) id
-
-foldNat :: a -> (a -> a) -> Integer -> a
-foldNat z f n = case n of
-  0 -> z
-  _ -> f (foldNat z f (n-1))
-
---Trunca el árbol hasta un determinado nivel. Cuando llega a 0, reemplaza el
---resto del árbol por una hoja con el valor indicado.
---Funciona para árboles infinitos.
-truncar :: a -> Integer -> Arbol23 a b -> Arbol23 a b
-truncar reemplazo n arbol =
-    (truncarTruncable reemplazo) $ foldNat (truncable arbol) extender n
-
-{- Un "árbol truncable" es un Arbol23 que guarda un subárbol en cada nodo, y
-   puede truncarse o extenderse en las hojas de la frontera.
-   Además, para distinguir las hojas extensibles usa Maybe (Nothing indica que
-   la hoja se puede extender o truncar). -}
-type Arbol23Truncable a b = Arbol23 (Maybe a, Arbol23 a b) b
-
-
-{- Convierte un árbol en truncable. -}
-truncable :: Arbol23 a b -> Arbol23Truncable a b
-truncable arbol    = Hoja (Nothing, arbol) -- truncable, puede extenderse
-
-
-{- Extiende un árbol truncable,
-reemplazando cada hoja por su siguienteNivel. -}
-extender :: Arbol23Truncable a b -> Arbol23Truncable a b
-extender = foldA23 fHoja Dos Tres where
-  fHoja (m, arbol) = siguienteNivel arbol
-
-
-{- Dado un árbol, devuelve su equivalente truncable por 1 nivel. -}
-siguienteNivel :: Arbol23 a b -> Arbol23Truncable a b
-siguienteNivel a = case a of
-    Hoja x -> Hoja (Just x, Hoja x)
-    Dos x a1 a2 -> Dos x (t a1) (t a2)
-    Tres x y a1 a2 a3 -> Tres x y (t a1) (t a2) (t a3)
-  where
-    t = truncable
-
-
--- {- Transforma un árbol truncable en un árbol plano, reemplazando las hojas
---    truncables por el valor indicado por el valor indicado. -}
-truncarTruncable :: a -> Arbol23Truncable a b -> Arbol23 a b
-truncarTruncable reemplazo = let
-  f (m, o) = case m of
-    Just a -> a
-    Nothing-> reemplazo -- truncado!
-  in mapA23 f id
-
-
---Evalúa las funciones tomando los valores de los hijos como argumentos.
---En el caso de que haya 3 hijos, asocia a izquierda.
-evaluar :: Arbol23 a (a -> a -> a) -> a
-evaluar = foldA23 id (\f -> \a -> \b -> f a b)
-          (\f -> \g -> \a -> \b -> \c -> g (f a b) c)
-
---Ejemplo:
---evaluar (truncar 0 6 arbolito3) = 22 = (1*2-3)+(2*3-4)+(3*4-5)+(4*5-6)
-
-{- Árboles de ejemplo. -}
-arbolito1::Arbol23 Char Int
-arbolito1 = Tres 0 1
-        (Dos 2 (Hoja 'a') (Hoja 'b'))
-        (Tres 3 4 (Hoja 'c') (Hoja 'd') (Dos 5 (Hoja 'e') (Hoja 'f')))
-        (Dos 6 (Hoja 'g') (Dos 7 (Hoja 'h') (Hoja 'i')))
-
-arbolito2::Arbol23 Int Bool
-arbolito2 = Dos True (Hoja (-1))
-                     (Tres False True (Hoja 0) (Hoja (-2)) (Hoja 4))
-
-arbolito3::Arbol23 Int (Int->Int->Int)
-arbolito3 = Dos (+) (Tres (*) (-) (Hoja 1) (Hoja 2) (Hoja 3))
-                    (incrementarHojas arbolito3)
-
-
-arbolito3' = Dos "(+)" (Tres "(*)" "(-)" (Hoja 1) (Hoja 2) (Hoja 3))
-                       (incrementarHojas arbolito3')
-
-arbolito4::Arbol23 Int Char
-arbolito4 = Dos 'p' (Dos 'l' (Dos 'g' (Hoja 5) (Hoja 2))
-                             (Tres 'r' 'a' (Hoja 0)(Hoja 1)(Hoja 12)))
-                    (Dos 'p' (Tres 'n' 'd' (Hoja (-3))(Hoja 4)(Hoja 9))
-                             (Dos 'e' (Hoja 20)(Hoja 7)))
-\end{verbatim}
-\section{\texttt{Diccionario.hs}}
-\begin{verbatim}
-module Diccionario (Diccionario, vacio, definir, definirVarias,
-                    obtener, claves, cmp, estructura) where
-
-import Data.Maybe
-import Data.List
-import Arbol23
-
-{- Definiciones de tipos. -}
-
-type Comp clave = clave->clave->Bool
-type Estr clave valor = Arbol23 (clave,valor) clave
-
-data Diccionario clave valor =
-    Dicc {cmp :: Comp clave, estructura :: Maybe (Estr clave valor)}
---El comparador es por menor.
-
-{- Funciones provistas por la cátedra. -}
-
--- Inserta un nuevo par clave, valor en una estructura
--- que ya tiene al menos un dato.
-insertar::clave->valor->Comp clave->Estr clave valor-> Estr clave valor
-insertar c v comp a23 =
-    interceptar (insertarYPropagar c v comp a23) id (\s1 (c1, s2)->Dos c1 s1 s2)
-
---Maneja el caso de que la segunda componente sea Nothing.
-interceptar::(a,Maybe b)->(a->c)->(a->b->c)->c
-interceptar (x,y) f1 f2 = case y of
-                   Nothing -> f1 x
-                   Just z -> f2 x z
-
-{- Inserta una clave con su valor correspondiente.
-   Si se actualiza el índice, el cambio se propaga hacia arriba
-   para mantener balanceado el árbol.
-   Usamos recursión explícita porque este tipo de recursión no es estructural
-   (no se aplica a todos los hijos). -}
-insertarYPropagar::clave->valor->Comp clave->Estr clave valor->
-    (Estr clave valor, Maybe (clave, Estr clave valor))
-insertarYPropagar c v comp a23 =
-    let rec = insertarYPropagar c v comp in case a23 of
-        -- Si es hoja, elegimos la máxima de las claves y
-        -- propagamos el balanceo hacia arriba.
-        Hoja (ch,vh) -> if comp c ch
-                then (Hoja (c,v), Just (ch, Hoja (ch,vh)))
-                else (Hoja (ch, vh), Just (c, Hoja (c,v)))
-        {- Si el actual es Nodo-Dos, o se queda en forma
-        Nodo-Dos o se transforma en Nodo-Tres; no puede ocurrir
-        que haya propagación hacia arriba (retornamos Nothing). -}
-        Dos c1 a1 a2 -> (if comp c c1
-                then
-                -- La clave c va del lado izquierdo.
-                    interceptar (rec a1)
-                        (\s1 -> Dos c1 s1 a2)
-                        (\s1 (c3, s2) -> Tres c3 c1 s1 s2 a2)
-                else
-                -- La clave c va del lado derecho.
-                    interceptar (rec a2)
-                        (\s1 -> Dos c1 a1 s1)
-                        (\s1 (c3, s2) -> Tres c1 c3 a1 s1 s2), Nothing)
-        {- Nodo-tres sólo propaga si de abajo propagan,
-        los tres casos son muy similares
-        Sólo cambia en que árbol se inserta. -}
-        Tres c1 c2 a1 a2 a3 -> if comp c c1
-                then
-                    -- La clave debe ir en el primer árbol.
-                    interceptar (rec a1)
-                        (\s1 -> (Tres c1 c2 s1 a2 a3, Nothing))
-                        (\s1 (c3, s2) -> (Dos c3 s1 s2, Just(c1, Dos c2 a2 a3)))
-                else if comp c c2
-                then
-                    -- La clave debe ir en el árbol del medio.
-                    interceptar (rec a2)
-                        (\s1 -> (Tres c1 c2 a1 s1 a3, Nothing))
-                        (\s1 (c3, s2) -> (Dos c1 a1 s1, Just(c3, Dos c2 s2 a3)))
-                else
-                    --La clave debe ir en el último árbol.
-                    interceptar (rec a3)
-                        (\s1 -> (Tres c1 c2 a1 a2 s1, Nothing))
-                        (\s1 (c3, s2) -> (Dos c1 a1 a2, Just(c2, Dos c3 s1 s2)))
-
---Se asume que la lista no tiene claves repetidas.
-definirVarias::[(clave,valor)]->Diccionario clave valor->Diccionario clave valor
-definirVarias = (flip.foldr.uncurry) definir
-
-{- Funciones a implementar. -}
-
-vacio::Comp clave->Diccionario clave valor
-vacio c = Dicc c Nothing
-
-definir :: clave -> valor -> Diccionario clave valor -> Diccionario clave valor
-definir k v d = if isNothing e
-  then Dicc c (Just (Hoja (k, v)))
-  else Dicc c (Just (insertar k v c (fromJust e)))
-    where
-      c = cmp d
-      e = estructura d
-
-obtener::Eq clave=>clave->Diccionario clave valor->Maybe valor
-obtener k d = obtener_estr (cmp d) k (estructura d)
-  where
-    obtener_estr cmp k (Nothing) = Nothing
-    obtener_estr cmp k (Just a) =
-        (\(Hoja (k',v))-> if k == k' then Just v else Nothing) $
-        head $ dropWhile (not.esHoja) $ iterate (bajar_nivel cmp k) a
-
-bajar_nivel::Eq clave=>(clave->clave->Bool)->clave->
-    Arbol23 (clave, valor) clave->Arbol23 (clave, valor) clave
-bajar_nivel cmp k (Hoja (k', v)) = Hoja (k', v)
-bajar_nivel cmp k (Dos k1 a1 a2)
-    | cmp k k1 = a1
-    | otherwise = a2
-bajar_nivel cmp k (Tres k1 k2 a1 a2 a3)
-    | cmp k k1 = a1
-    | cmp k k2 = a2
-    | otherwise = a3
-
-claves::Diccionario clave valor->[clave]
-claves d = claves_estr (estructura d)
-  where
-    claves_estr (Nothing) = []
-    claves_estr (Just a) =  map (\(k,v) -> k) $ hojas a
+
+% para recargar el fuente con "r." en vez de "[batalla_naval]."
+r :- [batalla_naval].
+
+%------------------Predicados predefinidos:------------------%
+
+%fliplength(?Longitud, ?Lista)
+fliplength(N, L) :- length(L, N).
+
+%matriz(?Matriz, ?Filas, ?Columnas)
+matriz(M, F, C) :- length(M, F), maplist(fliplength(C), M).
+
+%dif1(+N1, ?N2)
+dif1(N1, N2) :- N2 is N1 + 1.
+dif1(N1, N2) :- N2 is N1 - 1.
+
+%adyacente(+F1, +C1, ?F2, ?C2)
+adyacente(FF, C1, FF, C2) :- dif1(C1, C2).
+adyacente(F1, CC, F2, CC) :- dif1(F1, F2).
+adyacente(F1, C1, F2, C2) :- dif1(C1, C2), dif1(F1, F2).
+
+%enRango(+Matriz, +Fila, +Columna)
+enRango([Fila|Filas], F, C) :-
+  F > 0,
+  C > 0,
+  length([Fila|Filas], FMax),
+    F =< FMax,
+  length(Fila, CMax),
+    C =< CMax.
+
+%adyacenteEnRango(+Tablero, +F1, +C1, ?F2, ?C2)
+adyacenteEnRango(T, F1, C1, F2, C2) :-
+  adyacente(F1, C1, F2, C2),
+  enRango(T, F2, C2).
+
+%------------------Predicados a definir:------------------%
+
+%contenido(+?Tablero, ?Fila, ?Columna, ?Contenido)
+contenido(T, F, C, Cont) :- nth1(F, T, Fila), nth1(C, Fila, Cont).
+
+%vacio(+?Tablero, ?Fila, ?Columna)
+vacio(T, F, C) :- contenido(T, F, C, Cont), var(Cont).
+
+%disponible(+Tablero, ?Fila, ?Columna)
+disponible(T, F, C) :- vacio(T, F, C), 
+                       forall(adyacenteEnRango(T, F, C, F_1, C_1), 
+                       vacio(T, F_1, C_1)).
+
+%puedoColocar(+CantPiezas, ?Direccion, +Tablero, ?Fila, ?Columna)
+puedoColocar(1, _, T, F, C) :- disponible(T, F, C).
+puedoColocar(N, vertical, T, F, C) :- disponible(T, F, C), N1 is N - 1, F1 is F + 1, 
+                                      puedoColocar(N1, vertical, T, F1, C).
+puedoColocar(N, horizontal, T, F, C) :- disponible(T, F, C), N1 is N - 1, C1 is C + 1, 
+                                        puedoColocar(N1, horizontal, T, F, C1).
+
+%hayBarco(+CantPiezas, ?Direccion, +Tablero, ?Fila, ?Columna)
+hayBarco(1, _, T, F, C) :- contenido(T, F, C, o).
+hayBarco(N, vertical, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, F1 is F + 1, 
+                                  hayBarco(N1, vertical, T, F1, C).
+hayBarco(N, horizontal, T, F, C) :- contenido(T, F, C, o), N1 is N - 1, C1 is C + 1, 
+                                    hayBarco(N1, horizontal, T, F, C1).
+
+%ubicarBarcos(+Barcos, +?Tablero)
+ubicarBarcos([], _).
+ubicarBarcos([B|Bs], T) :- puedoColocar(B, Dir, T, F, C), hayBarco(B, Dir, T, F, C), 
+                           ubicarBarcos(Bs, T).
+
+%completarConAgua(+?Tablero)
+completarConAgua(T) :- maplist(completarFilaConAgua, T).
+
+%completarFilaConAgua(+?Fila)
+completarFilaConAgua(F) :- maplist(completarCasilleroConAgua, F).
+
+%completarCasilleroConAgua(+?Casillero)
+completarCasilleroConAgua(~) :- !.
+completarCasilleroConAgua(o).
+
+%reemplazar(+Lista, +Indice, +Elemento, -Resultado)
+reemplazar([], _, _, []).
+reemplazar([_|Xs], 1, Z, [Z|Xs]).
+reemplazar([X|Xs], N, Z, [X|Ys]) :- N > 1, N1 is N - 1, reemplazar(Xs, N1, Z, Ys).
+
+%golpear(+Tablero, +NumFila, +NumColumna, -NuevoTab)
+golpear(T, F, C, T) :- contenido(T, F, C, ~).
+golpear(T, F, C, NuevoT) :- contenido(T, F, C, o), nth1(F, T, Fila),
+                            reemplazar(Fila, C, ~, NuevaFila),
+                            reemplazar(T, F, NuevaFila, NuevoT).
+
+% Completar instanciación soportada y justificar.
+%atacar(+Tablero, ?Fila, ?Columna, ?Resultado, ?NuevoTab)
+atacar(T, F, C, agua, T) :- golpear(T, F, C, T).
+atacar(T, F, C, hundido, NuevoT) :- contenido(T, F, C, o), golpear(T, F, C, NuevoT),
+                                    forall(adyacenteEnRango(T, F, C, F_1, C_1), 
+                                    contenido(T, F_1, C_1, ~)).
+atacar(T, F, C, tocado, NuevoT) :- contenido(T, F, C, o), golpear(T, F, C, NuevoT),
+                                   \+ forall(adyacenteEnRango(T, F, C, F_1, C_1), 
+                                   contenido(T, F_1, C_1, ~)).
+
+%------------------Tests:------------------%
+
+test(1) :-
+  matriz(M, 2, 3),
+  adyacenteEnRango(M, 2, 2, 2, 3).
+  
+test(2) :-
+  matriz(M, 2, 3),
+  setof(
+    (F, C),
+    adyacenteEnRango(M, 1, 1, F, C),
+    [(1, 2), (2, 1), (2, 2)]
+  ).
+  
+test(3) :-
+  contenido([[o,~]], 1, 1, o),
+  contenido([[o,~]], 1, 2, ~).
+  
+test(4) :-
+  matriz(M, 1, 1),
+  vacio(M, 1, 1).
+  
+test(5) :-
+  matriz(M, 3, 3),
+  contenido(M, 1, 2, o),
+  setof(
+    (F, C),
+    disponible(M, F, C),
+    [(3, 1), (3, 2), (3, 3)]
+  ).
+  
+test(6) :-
+  matriz(M, 2, 4),
+  setof(
+    (F, C, Dir),
+    puedoColocar(3, Dir, M, F, C),
+    [(1, 1, horizontal), (1, 2, horizontal), (2, 1, horizontal), (2, 2, horizontal)]
+  ).
+  
+test(7) :-
+  matriz(M,2,3),
+  contenido(M,2,1,o),
+  setof(
+    (F, C, Dir),
+    puedoColocar(2,Dir,M,F,C),
+    [(1, 3, vertical)]
+  ).
+  
+test(8) :-
+  matriz(M,3,2),
+  setof(
+    M,
+    ubicarBarcos([2,1],M),
+    [
+      [[o, o], [_, _], [o, _]],
+      [[o, o], [_, _], [_, o]],
+      [[o, _], [_, _], [o, o]],
+      [[_, o], [_, _], [o, o]]
+    ]
+  ).
+  
+test(9) :-
+  matriz(M,1,2),
+  contenido(M,1,1,~),
+  contenido(M,1,2,o),
+  golpear(M,1,1,IntM),
+  golpear(IntM,1,2,NuevaM),
+  contenido(NuevaM,1,1,~),
+  contenido(NuevaM,1,2,~).
+
+tests :- forall(between(1, 9, N), test(N)).
+
 \end{verbatim}
 \end{document}
