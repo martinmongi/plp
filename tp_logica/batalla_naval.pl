@@ -69,7 +69,7 @@ completarCasilleroConAgua(o).
 
 %reemplazar(+Lista, +Indice, +Elemento, -Resultado)
 reemplazar([], _, _, []).
-reemplazar([X|Xs], 1, Z, [Z|Xs]).
+reemplazar([_|Xs], 1, Z, [Z|Xs]).
 reemplazar([X|Xs], N, Z, [X|Ys]) :- N > 1, N1 is N - 1, reemplazar(Xs, N1, Z, Ys).
 
 %golpear(+Tablero, +NumFila, +NumColumna, -NuevoTab)
@@ -79,7 +79,7 @@ golpear(T, F, C, NuevoT) :- contenido(T, F, C, o), nth1(F, T, Fila),
                             reemplazar(T, F, NuevaFila, NuevoT).
 
 % Completar instanciación soportada y justificar.
-%atacar(Tablero, Fila, Columna, Resultado, NuevoTab)
+%atacar(+Tablero, ?Fila, ?Columna, ?Resultado, ?NuevoTab)
 atacar(T, F, C, agua, T) :- golpear(T, F, C, T).
 atacar(T, F, C, hundido, NuevoT) :- contenido(T, F, C, o), golpear(T, F, C, NuevoT),
                                     forall(adyacenteEnRango(T, F, C, F_1, C_1), contenido(T, F_1, C_1, ~)).
@@ -98,4 +98,59 @@ test(2) :-
     adyacenteEnRango(M, 1, 1, F, C),
     [(1, 2), (2, 1), (2, 2)]
   ).
-tests :- forall(between(1, 2, N), test(N)). % Cambiar el 2 por la cantidad de tests que tengan.
+test(3) :-
+  contenido([[o,~]], 1, 1, o),
+  contenido([[o,~]], 1, 2, ~).
+test(4) :-
+  matriz(M, 1, 1),
+  vacio(M, 1, 1).
+test(5) :-
+  matriz(M, 3, 3),
+  contenido(M, 1, 2, o),
+  setof(
+    (F, C),
+    disponible(M, F, C),
+    [(3, 1), (3, 2), (3, 3)]
+  ).
+test(6) :-
+  matriz(M, 2, 4),
+  setof(
+    (F, C, Dir),
+    puedoColocar(3, Dir, M, F, C),
+    [(1, 1, horizontal), (1, 2, horizontal), (2, 1, horizontal), (2, 2, horizontal)]
+  ).
+test(7) :-
+  matriz(M,2,3),
+  contenido(M,2,1,o),
+  setof(
+    (F, C, Dir),
+    puedoColocar(2,Dir,M,F,C),
+    [(1, 3, vertical)]
+  ).
+test(8) :-
+  matriz(M,3,2),
+  setof(
+    M,
+    ubicarBarcos([2,1],M),
+    [
+      [[o, o], [_, _], [o, _]],
+      [[o, o], [_, _], [_, o]],
+      [[o, _], [_, _], [o, o]],
+      [[_, o], [_, _], [o, o]]
+    ]
+  ).
+test(9) :-
+  matriz(M,1,2),
+  contenido(M,1,1,~),
+  contenido(M,1,2,o),
+  golpear(M,1,1,IntM),
+  golpear(IntM,1,2,NuevaM),
+  contenido(NuevaM,1,1,~),
+  contenido(NuevaM,1,2,~).
+
+% No funciona, debe haber algun problema con la sintaxis
+test(10) :-
+  Tablero = [[o, o], [_, _], [_, o]],
+  completarConAgua(Tablero) = [[o, o], [~, ~], [~, o]].
+
+tests :- forall(between(1, 9, N), test(N)). % Cambiar el 2 por la cantidad de tests que tengan.
