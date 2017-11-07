@@ -39,8 +39,8 @@ pad i = replicate i ' '
 
 {- Funciones pedidas. -}
 
-foldA23 :: (a -> c) -> (b -> c -> c -> c) -> (b -> b -> c -> c -> c -> c)
-           -> Arbol23 a b -> c
+foldA23 :: (a -> c) -> (b -> c -> c -> c) -> (b -> b -> c -> c -> c -> c)->
+  Arbol23 a b -> c
 foldA23 fHoja fDos fTres t = case t of
     Hoja x              -> fHoja x
     Dos  k r1 r2        -> fDos  k     (f r1) (f r2)
