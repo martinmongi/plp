@@ -20,7 +20,8 @@ padTree nivel acum doPad t = case t of
                  rec x True d ++ "\n"
   (Tres x y i m d) -> initialPad ++ stuff x ++ --(' ':tail (stuff y)) ++
                       pad padlength ++ rec x False i ++ "\n" ++
-                      pad levelPad ++ stuff y ++ pad padlength ++ rec x False m ++ "\n" ++
+                      pad levelPad ++ stuff y ++ pad padlength
+                      ++ rec x False m ++ "\n" ++
                       rec x True d ++ "\n"
   where l = length . stuff
         levelPad = (padlength*nivel + acum)
@@ -38,7 +39,8 @@ pad i = replicate i ' '
 
 {- Funciones pedidas. -}
 
-foldA23 :: (a -> c) -> (b -> c -> c -> c) -> (b -> b -> c -> c -> c -> c) -> Arbol23 a b -> c
+foldA23 :: (a -> c) -> (b -> c -> c -> c) -> (b -> b -> c -> c -> c -> c)
+           -> Arbol23 a b -> c
 foldA23 fHoja fDos fTres t = case t of
     Hoja x              -> fHoja x
     Dos  k r1 r2        -> fDos  k     (f r1) (f r2)
@@ -97,7 +99,8 @@ crecer f = foldA23 Hoja fDos fTres
 truncar' :: a -> Integer -> Arbol23 a b -> Arbol23 a b
 truncar' z n a = hastaNivel z n (conNiveles a)
 
--- decora un arbol con su numero de nivel, la raiz es 1, el primer nivel es 2, etc.
+-- decora un arbol con su numero de nivel,
+-- la raiz es 1, el primer nivel es 2, etc.
 conNiveles :: Arbol23 a b -> Arbol23 (a, Integer) (b, Integer)
 conNiveles = foldA23 h d t
   where h x            =         Hoja (z x)
@@ -107,7 +110,8 @@ conNiveles = foldA23 h d t
         mapInc = mapA23 inc inc
         inc (x, n) = (x, n+1)
 
--- devuelve el arbol decorado hasta el nivel indicado, reemplazando el nivel cortado por (Hoja z)
+-- devuelve el arbol decorado hasta el nivel indicado,
+-- reemplazando el nivel cortado por (Hoja z)
 hastaNivel :: a -> Integer -> (Arbol23 (a, Integer) (b, Integer) -> Arbol23 a b)
 hastaNivel z n = foldA23 h d t
   where h (x, xn)                 = f xn (Hoja x)             z'
@@ -135,11 +139,15 @@ arbolito2 :: Arbol23 Int Bool
 arbolito2 = Dos True (Hoja (-1)) (Tres False True (Hoja 0) (Hoja (-2)) (Hoja 4))
 
 arbolito3 :: Arbol23 Int (Int->Int->Int)
-arbolito3 = Dos (+) (Tres (*) (-) (Hoja 1) (Hoja 2) (Hoja 3)) (incrementarHojas arbolito3)
+arbolito3 = Dos (+) (Tres (*) (-) (Hoja 1) (Hoja 2) (Hoja 3))
+                    (incrementarHojas arbolito3)
 
 arbolito3' :: Arbol23 Int String
-arbolito3' = Dos "(+)" (Tres "(*)" "(-)" (Hoja 1) (Hoja 2) (Hoja 3)) (incrementarHojas arbolito3')
+arbolito3' = Dos "(+)" (Tres "(*)" "(-)" (Hoja 1) (Hoja 2) (Hoja 3))  
+                 (incrementarHojas arbolito3')
 
 arbolito4 :: Arbol23 Int Char
-arbolito4 = Dos 'p' (Dos 'l' (Dos 'g' (Hoja 5) (Hoja 2)) (Tres 'r' 'a' (Hoja 0)(Hoja 1)(Hoja 12)))
-                    (Dos 'p' (Tres 'n' 'd' (Hoja (-3))(Hoja 4)(Hoja 9)) (Dos 'e' (Hoja 20)(Hoja 7)))
+arbolito4 = Dos 'p' (Dos 'l' (Dos 'g' (Hoja 5) (Hoja 2))
+                             (Tres 'r' 'a' (Hoja 0)(Hoja 1)(Hoja 12)))
+                    (Dos 'p' (Tres 'n' 'd' (Hoja (-3))(Hoja 4)(Hoja 9))
+                             (Dos 'e' (Hoja 20)(Hoja 7)))
