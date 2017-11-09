@@ -1,5 +1,5 @@
 module Diccionario (Diccionario, vacio, definir, definirVarias,
-obtener, claves, cmp, estructura) where
+obtener, claves, cmp, estructura, dicc1, dicc2, dicc3) where
 
 import Data.Maybe
 import Data.List
