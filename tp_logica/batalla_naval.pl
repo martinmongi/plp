@@ -45,8 +45,12 @@ disponible(T, F, C) :- vacio(T, F, C),
                        forall(adyacenteEnRango(T, F, C, F_1, C_1),
                        vacio(T, F_1, C_1)).
 
+direccion(vertical).
+direccion(horizontal).
+
 %puedoColocar(+CantPiezas, ?Direccion, +Tablero, ?Fila, ?Columna)
-puedoColocar(1, _, T, F, C) :- disponible(T, F, C).
+puedoColocar(1, D, T, F, C) :- nonvar(D), direccion(D), disponible(T, F, C).
+puedoColocar(1, D, T, F, C) :- var(D), disponible(T, F, C).
 puedoColocar(N, vertical, T, F, C) :- disponible(T, F, C),
                                       N1 is N - 1, F1 is F + 1,
                                       puedoColocar(N1, vertical, T, F1, C).
