@@ -167,7 +167,9 @@ test(9) :-
 
 test(10) :-
   Tablero = [[o, o], [_, _], [_, o]],
-  completarConAgua(Tablero) = [[o, o], [~, ~], [~, o]].
+  Tablero \== [[o, o], [~, ~], [~, o]],
+  completarConAgua(Tablero),
+  Tablero == [[o, o], [~, ~], [~, o]].
 
 % Cambiar el 2 por la cantidad de tests que tengan.
-tests :- forall(between(1, 10, N), test(N)). 
+tests :- forall(between(1, 10,  N), test(N)).
