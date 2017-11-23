@@ -99,7 +99,7 @@ golpear(T, F, C, NuevoT) :- contenido(T, F, C, o), nth1(F, T, Fila),
                             reemplazar(T, F, NuevaFila, NuevoT).
 
 % Completar instanciación soportada y justificar.
-%atacar(+Tablero, ?Fila, ?Columna, ?Resultado, ?NuevoTab)
+%atacar(+Tablero, +Fila, +Columna, -Resultado, -NuevoTab)
 atacar(T, F, C, agua, T) :- golpear(T, F, C, T).
 atacar(T, F, C, hundido, NuevoT) :- contenido(T, F, C, o),
                                     golpear(T, F, C, NuevoT),
@@ -110,6 +110,8 @@ atacar(T, F, C, tocado, NuevoT) :- contenido(T, F, C, o),
                                    adyacenteEnRango(T, F, C, F_1, C_1),
                                    contenido(T, F_1, C_1, o).
 
+% Ejercicio 8: es reversible el predicado atacar en alguno de sus parámetros?
+% TODO
 %------------------Tests:------------------%
 
 test(1) :-
