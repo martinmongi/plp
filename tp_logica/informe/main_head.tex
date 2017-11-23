@@ -1,0 +1,96 @@
+\documentclass[a4paper]{article}
+
+% \usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{geometry}
+\usepackage{multicol}
+\usepackage{makeidx}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+\usepackage{enumerate}
+\usepackage{algpseudocode}
+\usepackage{float}
+\restylefloat{table}
+
+
+\title{Recuperatorio TP Funcional Paradigmas de Lenguajes de Programación}
+
+\date{\today}
+
+\makeindex
+
+
+\begin{document}
+\newgeometry{margin=2cm}
+\pagenumbering{gobble}
+
+\begin{raggedleft}
+\includegraphics[width=8cm]{logo1.jpg}\\
+\end{raggedleft}
+
+\begin{raggedright}
+\vspace{3cm}
+{\Huge \bfseries Recuperatorio Trabajo Práctico de Programación Lógica\\}
+\rule{\textwidth}{0.02in}
+\large Jueves 23 de Noviembre de 2017 \hfill Paradigmas de Lenguajes de Programación\\
+\vspace{1cm}
+\end{raggedright}
+
+\begin{centering}
+\vspace{1.5cm}
+\end{centering}
+
+
+\normalsize
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l@{\hspace{4ex}}c@{\hspace{4ex}}l|}
+        \hline
+        \rule{0pt}{1.2em}Integrante & LU & Correo electr\'onico\\[0.2em]
+        \hline
+        \rule{0pt}{1.2em} Francisco Demartino    & 348/14 &\tt demartino.francisco@gmail.com\\[0.2em]
+        \rule{0pt}{1.2em} Mart\'in Mongi Bad\'ia & 422/13 &\tt martinmongi@gmail.com\\[0.2em]
+        \hline
+        \rule{0pt}{1.2em}Grupo: "Demo" &  & \\[0.2em]
+        \hline
+
+\end{tabular}
+\end{table}
+
+\vspace{1.5cm}
+
+
+\begin{multicols}{2}
+\includegraphics[width=8cm]{logo-uba.png}
+
+\columnbreak
+\vspace*{4.5cm}
+\raggedleft
+\textbf{Facultad de Ciencias Exactas y Naturales}\\
+Universidad de Buenos Aires\\
+\small
+Ciudad Universitaria - (Pabellon I/Planta Baja)\\
+Intendente G\"uiraldes 2160 - C1428EGA\\
+Ciudad Autonoma de Buenos Aires - Rep. Argentina\\
+Tel/Fax: (54 11) 4576-3359\\
+http://www.fcen.uba.ar
+\end{multicols}
+
+\restoregeometry
+
+\clearpage
+
+\pagenumbering{arabic}
+
+\clearpage
+
+\section{\texttt{batalla\_naval.pl}}
+\begin{verbatim}
