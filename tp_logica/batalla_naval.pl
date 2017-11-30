@@ -52,7 +52,7 @@ direccion(horizontal).
 puedoColocar(1, D, T, F, C) :- nonvar(D), direccion(D), disponible(T, F, C).
 puedoColocar(1, D, T, F, C) :- var(D), disponible(T, F, C).
 
-puedoColocar(N, vertical, T, F, C) :- N > 1, puedoColocarAux(N, T, F, C, 1, 0).
+puedoColocar(N, vertical, T, F, C)   :- N > 1, puedoColocarAux(N, T, F, C, 1, 0).
 puedoColocar(N, horizontal, T, F, C) :- N > 1, puedoColocarAux(N, T, F, C, 0, 1).
 
 puedoColocarAux(0, _, _, _, _, _).
@@ -62,10 +62,10 @@ puedoColocarAux(N, T, F, C, Df, Dc) :-  disponible(T, F, C),
                                         puedoColocarAux(N1, T, F1, C1, Df, Dc).
 
 %hayBarco(+CantPiezas, ?Direccion, +Tablero, ?Fila, ?Columna)
-hayBarco(1, _, T, F, C) :- contenido(T, F, C, o).
-hayBarco(N, vertical, T, F, C) :- contenido(T, F, C, o),
-                                  N1 is N - 1, F1 is F + 1,
-                                  hayBarco(N1, vertical, T, F1, C).
+hayBarco(1, _, T, F, C)          :- contenido(T, F, C, o).
+hayBarco(N, vertical, T, F, C)   :- contenido(T, F, C, o),
+                                    N1 is N - 1, F1 is F + 1,
+                                    hayBarco(N1, vertical, T, F1, C).
 hayBarco(N, horizontal, T, F, C) :- contenido(T, F, C, o),
                                     N1 is N - 1, C1 is C + 1,
                                     hayBarco(N1, horizontal, T, F, C1).
@@ -87,7 +87,7 @@ completarCasilleroConAgua(~) :- !.
 completarCasilleroConAgua(o).
 
 %reemplazar(+Lista, +Indice, +Elemento, -Resultado)
-reemplazar([], _, _, []).
+reemplazar([],     _, _, []).
 reemplazar([_|Xs], 1, Z, [Z|Xs]).
 reemplazar([X|Xs], N, Z, [X|Ys]) :- N > 1, N1 is N - 1,
                                     reemplazar(Xs, N1, Z, Ys).
@@ -105,7 +105,7 @@ golpeaUnBarco(T, F, C, NuevoT) :- contenido(T, F, C, o),
 atacar(T, F, C, agua,    T)      :- golpear(T, F, C, T).
 atacar(T, F, C, hundido, NuevoT) :- golpeaUnBarco(T, F, C, NuevoT),
                                     forall(adyacenteEnRango(T, F, C, F_1, C_1),
-                                    contenido(T, F_1, C_1, ~)).
+                                           contenido(T, F_1, C_1, ~)).
 atacar(T, F, C, tocado,  NuevoT) :- golpeaUnBarco(T, F, C, NuevoT),
                                     adyacenteEnRango(T, F, C, F_1, C_1),
                                     contenido(T, F_1, C_1, o).
