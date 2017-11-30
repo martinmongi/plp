@@ -111,8 +111,28 @@ atacar(T, F, C, tocado,  NuevoT) :- golpeaUnBarco(T, F, C, NuevoT),
                                     contenido(T, F_1, C_1, o).
 
 % Ejercicio 8: es reversible el predicado atacar en alguno de sus parámetros?
-% TODO
 
+/**
+
+# Caso T instanciado
+
+  Mientras el tablero original (T) esté instanciado, podemos dejar libres el
+  resto de las variables (Fila, Columna, Resultado y NuevoTab) y obtendremos
+  todos los ataques posibles a ese tablero.
+
+  Ésto es porque atacar usa golpear, que usa contenido, que usa nth1, y nth1
+  puede recorrer los elementos de una lista -- además es reversible en todos sus
+  argumentos: nth1(?Index, ?List, ?Elem).
+
+  También podemos agregar (una de/varias de/todas) las otras variables (Fila,
+  Columna, Resultado, NuevoTab) y el atacar sera verdadero en los casos
+  correctos.
+
+# Caso T sin instanciar:
+
+  TODO
+
+*/
 
 %------------------Tests:------------------%
 
