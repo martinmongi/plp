@@ -116,22 +116,107 @@ atacar(T, F, C, tocado,  NuevoT) :- golpeaUnBarco(T, F, C, NuevoT),
 
 # Caso T instanciado
 
+  Es reversible!
+
   Mientras el tablero original (T) esté instanciado, podemos dejar libres el
   resto de las variables (Fila, Columna, Resultado y NuevoTab) y obtendremos
   todos los ataques posibles a ese tablero.
 
   Ésto es porque atacar usa golpear, que usa contenido, que usa nth1, y nth1
   puede recorrer los elementos de una lista -- además es reversible en todos sus
-  argumentos: nth1(?Index, ?List, ?Elem).
+  argumentos: nth1(?Index, ?List, ?Elem) -- entonces las coordenadas se van a ir
+  instanciando en los lugares posibles y veremos todos los casos.
 
   También podemos agregar (una de/varias de/todas) las otras variables (Fila,
-  Columna, Resultado, NuevoTab) y el atacar sera verdadero en los casos
+  Columna, Resultado, NuevoTab) y el atacar será verdadero en los casos
   correctos.
+
+  Podríamos mejorar el hint de instanciación a:
+
+  %atacar(+Tablero, ?Fila, ?Columna, ?Resultado, ?NuevoTab)
+
+  que es más general que el original:
+
+  %atacar(+Tablero, +Fila, +Columna, -Resultado, -NuevoTab)
 
 # Caso T sin instanciar:
 
-  TODO
+ ## NuevoTab sin instanciar:
 
+  ## Instanciando sólo coordenadas y Res
+
+    Salvo cuando Res = agua, no es reversible (se cuelga).
+
+    ### "agua"
+
+      Si además de las coordenadas pedimos "agua" funciona OK; vemos el caso
+      donde el tablero tiene agua en esa posicion (y el resto de las celdas sin
+      instanciar), y el nuevo tablero es el mismo que el original. Si pedimos
+      mas resultados, da false.
+
+        ?- atacar(T, 1, 2, agua, NuevoT).
+        T = NuevoT, NuevoT = [[_G3028, ~|_G3032]|_G3026] ;
+        false.
+
+    ### "hundido"
+
+      Si pedimos "hundido", se cuelga sin dar resultados:
+
+        ?- atacar(T, 1, 2, hundido, NuevoT).
+        (... pasa un rato...)
+        ERROR: Out of global stack
+
+        TODO: por que?
+
+    ### "tocado"
+
+      Con un ejemplo trivial (claramente falso) se cuelga:
+
+        ?- atacar(T, F, C, tocado, [[o]]).
+        (... pasa muuuuucho tiempo sin output y me aburro de esperar)
+
+        TODO: por que?
+
+  ## Instanciando solo coordenadas
+
+    Prolog prueba instanciar Res, en el orden en que los definimos. Entra a
+    "agua", da el resultado trivial, y después se cuelga en "hundido".
+
+  ## Instanciando solo Res
+
+    TODO: ?
+
+  ## Nada instanciado?
+
+    No es reversible. Primero instancia Res a "agua" y luego usa nth1 (via
+    golpear->contenido->nth1) con el tablero sin instanciar, entonces nunca se
+    le acaban las columnas:
+
+      ?- atacar(T, F, C, R, NT).
+      T = NT, NT = [[~|_G8737]|_G8734],
+      F = C, C = 1,
+      R = agua ;
+      T = NT, NT = [[_G8736, ~|_G8740]|_G8734],
+      F = 1,
+      C = 2,
+      R = agua ;
+      T = NT, NT = [[_G8736, _G8739, ~|_G8743]|_G8734],
+      F = 1,
+      C = 3,
+      R = agua ;
+
+      (...sigue dando casos similares donde C y los tableros crecen)
+
+    ...TODO...
+
+ ## Tablero sin instanciar, NuevoTab instanciado:
+   ...TODO...
+
+  ### Mirando una coordenada particular de un NuevoTab
+    ...TODO...
+
+  ### Mirando un Resultado particular de un NuevoTab
+    ...TODO...
 */
 
 %------------------Tests:------------------%
