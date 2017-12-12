@@ -91,9 +91,11 @@ truncar z = foldNat (const (Hoja z)) crecer
 
 -- dada f, devuelve una funcion que aplica f a los subarboles de un nodo
 crecer :: (Arbol23 a b -> Arbol23 a b) -> (Arbol23 a b -> Arbol23 a b)
-crecer f = foldA23 Hoja fDos fTres
-  where fDos  x   r1 r2    = Dos  x   (f r1) (f r2)
-        fTres x y r1 r2 r3 = Tres x y (f r1) (f r2) (f r3)
+crecer f = (\a -> case a of
+    Hoja x            -> Hoja x
+    Dos  x   r1 r2    -> Dos  x   (f r1) (f r2)
+    Tres x y r1 r2 r3 -> Tres x y (f r1) (f r2) (f r3)
+    )
 
 -- truncar pero mucho más rápido. testeado con truncar' 0 20 arbolito3'
 truncar' :: a -> Integer -> Arbol23 a b -> Arbol23 a b
