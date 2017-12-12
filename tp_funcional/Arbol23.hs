@@ -97,31 +97,6 @@ crecer f = (\a -> case a of
     Tres x y r1 r2 r3 -> Tres x y (f r1) (f r2) (f r3)
     )
 
--- truncar pero mucho más rápido. testeado con truncar' 0 20 arbolito3'
-truncar' :: a -> Integer -> Arbol23 a b -> Arbol23 a b
-truncar' z n a = hastaNivel z n (conNiveles a)
-
--- decora un arbol con su numero de nivel,
--- la raiz es 1, el primer nivel es 2, etc.
-conNiveles :: Arbol23 a b -> Arbol23 (a, Integer) (b, Integer)
-conNiveles = foldA23 h d t
-  where h x            =         Hoja (z x)
-        d x   r1 r2    = mapInc (Dos  (z x)       r1 r2)
-        t x y r1 r2 r3 = mapInc (Tres (z x) (z y) r1 r2 r3)
-        z x = (x, 0)
-        mapInc = mapA23 inc inc
-        inc (x, n) = (x, n+1)
-
--- devuelve el arbol decorado hasta el nivel indicado,
--- reemplazando el nivel cortado por (Hoja z)
-hastaNivel :: a -> Integer -> (Arbol23 (a, Integer) (b, Integer) -> Arbol23 a b)
-hastaNivel z n = foldA23 h d t
-  where h (x, xn)                 = f xn (Hoja x)             z'
-        d (x, xn)        r1 r2    = f xn (Dos  x   r1 r2)    (Dos  x   z' z')
-        t (x, xn) (y, _) r1 r2 r3 = f xn (Tres x y r1 r2 r3) (Tres x y z' z' z')
-        f nivel orig trunco = if nivel < n then orig else trunco
-        z' = Hoja z
-
 --Evalúa las funciones tomando los valores de los hijos como argumentos.
 --En el caso de que haya 3 hijos, asocia a izquierda.
 evaluar :: Arbol23 a (a -> a -> a) -> a
