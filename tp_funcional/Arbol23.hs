@@ -120,7 +120,7 @@ arbolito3 = Dos (+) (Tres (*) (-) (Hoja 1) (Hoja 2) (Hoja 3))
                     (incrementarHojas arbolito3)
 
 arbolito3' :: Arbol23 Int String
-arbolito3' = Dos "(+)" (Tres "(*)" "(-)" (Hoja 1) (Hoja 2) (Hoja 3))  
+arbolito3' = Dos "(+)" (Tres "(*)" "(-)" (Hoja 1) (Hoja 2) (Hoja 3))
                  (incrementarHojas arbolito3')
 
 arbolito4 :: Arbol23 Int Char
