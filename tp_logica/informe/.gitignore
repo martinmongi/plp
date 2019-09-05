@@ -3,3 +3,7 @@
 *.log
 *.out
 *.pdf
+
+# se genera con make
+main.tex
+
